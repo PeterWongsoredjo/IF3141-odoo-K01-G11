@@ -1,4 +1,4 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, tools
 
 class RawProduct(models.Model):
     _name = 'simple_erp.raw_product'
@@ -52,3 +52,51 @@ class InvoiceRecord(models.Model):
                 # Add back to stock when purchased/invoiced
                 rec.product_id.stock_amount += rec.quantity_purchased
         return records
+
+
+class DashboardMetrics(models.Model):
+    _name = 'simple_erp.dashboard_metrics'
+    _description = 'ERP Dashboard Metrics'
+    _auto = False
+
+    date = fields.Date(string='Date', readonly=True)
+    income_amount = fields.Float(string='Income Total', readonly=True)
+    expense_amount = fields.Float(string='Expense Total', readonly=True)
+    stock_in_amount = fields.Float(string='Stock In Total', readonly=True)
+    stock_out_amount = fields.Float(string='Stock Out Total', readonly=True)
+
+    def init(self):
+        tools.drop_view_if_exists(self.env.cr, self._table)
+        self.env.cr.execute("""
+            CREATE OR REPLACE VIEW simple_erp_dashboard_metrics AS (
+                SELECT
+                    row_number() OVER (ORDER BY t.date) AS id,
+                    t.date,
+                    SUM(t.income_amount) AS income_amount,
+                    SUM(t.expense_amount) AS expense_amount,
+                    SUM(t.stock_in_amount) AS stock_in_amount,
+                    SUM(t.stock_out_amount) AS stock_out_amount
+                FROM (
+                    SELECT
+                        sr.date::date AS date,
+                        SUM(sr.income_amount) AS income_amount,
+                        0::float AS expense_amount,
+                        0::float AS stock_in_amount,
+                        SUM(sr.quantity_sold) AS stock_out_amount
+                    FROM simple_erp_sales_record sr
+                    GROUP BY sr.date
+
+                    UNION ALL
+
+                    SELECT
+                        ir.date::date AS date,
+                        0::float AS income_amount,
+                        SUM(ir.expense_amount) AS expense_amount,
+                        SUM(ir.quantity_purchased) AS stock_in_amount,
+                        0::float AS stock_out_amount
+                    FROM simple_erp_invoice_record ir
+                    GROUP BY ir.date
+                ) t
+                GROUP BY t.date
+            )
+        """)

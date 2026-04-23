@@ -3,3 +3,4 @@ access_simple_erp_raw_product,simple_erp.raw_product,model_simple_erp_raw_produc
 access_simple_erp_product,simple_erp.product,model_simple_erp_product,base.group_user,1,1,1,1
 access_simple_erp_sales_record,simple_erp.sales_record,model_simple_erp_sales_record,base.group_user,1,1,1,1
 access_simple_erp_invoice_record,simple_erp.invoice_record,model_simple_erp_invoice_record,base.group_user,1,1,1,1
+access_simple_erp_dashboard_metrics,simple_erp.dashboard_metrics,model_simple_erp_dashboard_metrics,base.group_user,1,0,0,0
