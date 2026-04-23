@@ -292,6 +292,19 @@
     <field name="search_view_id" ref="view_stock_dashboard_search" />
   </record>
 
+  <!-- Bridge built-in HR app pages into ERP menu without changing their core behavior -->
+  <record id="action_erp_employees" model="ir.actions.act_window">
+    <field name="name">Employees</field>
+    <field name="res_model">hr.employee</field>
+    <field name="view_mode">kanban,tree,form</field>
+  </record>
+
+  <record id="action_erp_attendance" model="ir.actions.act_window">
+    <field name="name">Attendance</field>
+    <field name="res_model">hr.attendance</field>
+    <field name="view_mode">tree,form,graph,pivot</field>
+  </record>
+
   <!-- Main Menus -->
   <menuitem id="menu_erp_root" name="Business ERP" sequence="10" />
 
@@ -313,5 +326,9 @@
     action="action_sales_record" sequence="4" />
   <menuitem id="menu_erp_invoices" name="Invoice Upload" parent="menu_erp_root"
     action="action_invoice_record" sequence="5" />
+  <menuitem id="menu_erp_employees" name="Employees" parent="menu_erp_root"
+    action="action_erp_employees" sequence="6" />
+  <menuitem id="menu_erp_attendance" name="Attendance" parent="menu_erp_root"
+    action="action_erp_attendance" sequence="7" />
 
 </odoo>
