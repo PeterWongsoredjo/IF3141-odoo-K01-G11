@@ -40,6 +40,11 @@ echo "Stopping web container..."
 echo "Starting db container..."
 "${DC[@]}" up -d db
 
+echo "Waiting for PostgreSQL to be ready..."
+until "${DC[@]}" exec -T db pg_isready -U odoo >/dev/null 2>&1; do
+        sleep 1
+done
+
 echo "Recreating database..."
 "${DC[@]}" exec -T db dropdb -U odoo --if-exists postgres
 "${DC[@]}" exec -T db createdb -U odoo postgres
