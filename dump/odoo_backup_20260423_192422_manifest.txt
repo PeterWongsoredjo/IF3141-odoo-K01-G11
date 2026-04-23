@@ -1,0 +1,10 @@
+ODOO BACKUP MANIFEST
+Generated: Thu, Apr 23, 2026  7:24:26 PM
+Version: 1.0
+
+Files:
+  • Database:  odoo_backup_20260423_192422.dump (3.6M)
+  • Filestore: odoo_backup_20260423_192422_filestore.tar.gz (1.0K)
+  • Config:    odoo_backup_20260423_192422_config.tar.gz (1.0K)
+
+To restore, use: ./scripts/import_db.sh odoo_backup_20260423_192422.dump
