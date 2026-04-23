@@ -27,19 +27,22 @@ class RawProduct(models.Model):
     _description = 'Raw Product Stock Management'
 
     name = fields.Char(string='Product Name', required=True)
-    stock_amount = fields.Float(string='Current Stock Amount', default=0.0)
+    item_type = fields.Char(string='Item Type')
+    unit_of_measurement = fields.Char(string='Unit of Measurement')
+    current_qty = fields.Float(string='Current Quantity', default=0.0)
+    min_qty = fields.Float(string='Minimum Quantity', default=0.0)
 
     def write(self, vals):
-        if self.env.context.get('skip_stock_log') or 'stock_amount' not in vals:
+        if self.env.context.get('skip_stock_log') or 'current_qty' not in vals:
             return super(RawProduct, self).write(vals)
 
-        old_stock = {rec.id: rec.stock_amount for rec in self}
+        old_stock = {rec.id: rec.current_qty for rec in self}
         result = super(RawProduct, self).write(vals)
 
         log_vals = []
         for rec in self:
             previous = old_stock.get(rec.id, 0.0)
-            delta = rec.stock_amount - previous
+            delta = rec.current_qty - previous
             if tools.float_is_zero(delta, precision_digits=6):
                 continue
 
@@ -50,7 +53,7 @@ class RawProduct(models.Model):
                 'change_amount': delta,
                 'stock_in_amount': delta if delta > 0 else 0.0,
                 'stock_out_amount': -delta if delta < 0 else 0.0,
-                'resulting_stock': rec.stock_amount,
+                'resulting_stock': rec.current_qty,
             })
 
         if log_vals:
@@ -127,31 +130,63 @@ class InvoiceRecord(models.Model):
     _name = 'simple_erp.invoice_record'
     _description = 'Vendor Invoice / Restock Record'
 
-    name = fields.Char(string='Invoice / Receipt Number', required=True)
-    date = fields.Date(string='Date', default=fields.Date.context_today)
-    product_id = fields.Many2one('simple_erp.raw_product', string='Restocked Product')
-    quantity_purchased = fields.Float(string='Quantity Bought')
-    expense_amount = fields.Float(string='Total Expense')
+    user_id = fields.Many2one('res.users', string='User', default=lambda self: self.env.uid, readonly=True)
+    stock_item_id = fields.Many2one('simple_erp.raw_product', string='Stock Item')
+    request_date = fields.Date(string='Request Date', default=fields.Date.context_today)
+    done_date = fields.Date(string='Done Date')
+    status = fields.Selection([
+        ('requested', 'Requested'),
+        ('bought', 'Bought'),
+        ('moved', 'Moved'),
+        ('cancelled', 'Cancelled')
+    ], string='Status', default='requested')
+    qty = fields.Float(string='Quantity')
+    unit_price = fields.Float(string='Unit Price')
+    amount_total = fields.Float(string='Total Amount', compute='_compute_amount_total', store=True)
+    note = fields.Text(string='Note')
     receipt_image = fields.Binary(string='Invoice Image', attachment=True)
+
+    @api.depends('qty', 'unit_price')
+    def _compute_amount_total(self):
+        for rec in self:
+            rec.amount_total = rec.qty * rec.unit_price
 
     @api.model_create_multi
     def create(self, vals_list):
         records = super(InvoiceRecord, self).create(vals_list)
         for rec in records:
-            if rec.product_id:
+            if rec.stock_item_id and rec.status == 'done':
                 # Add back to stock when purchased/invoiced
-                new_stock = rec.product_id.stock_amount + rec.quantity_purchased
-                rec.product_id.with_context(skip_stock_log=True).write({'stock_amount': new_stock})
+                new_stock = rec.stock_item_id.current_qty + rec.qty
+                rec.stock_item_id.with_context(skip_stock_log=True).write({'current_qty': new_stock})
                 self.env['simple_erp.stock_change_log'].sudo().create({
                     'source': 'invoice',
-                    'reference': rec.name,
-                    'raw_product_id': rec.product_id.id,
-                    'change_amount': rec.quantity_purchased,
-                    'stock_in_amount': rec.quantity_purchased,
+                    'reference': f'Buy Request {rec.id}',
+                    'raw_product_id': rec.stock_item_id.id,
+                    'change_amount': rec.qty,
+                    'stock_in_amount': rec.qty,
                     'stock_out_amount': 0.0,
-                    'resulting_stock': rec.product_id.stock_amount,
+                    'resulting_stock': rec.stock_item_id.current_qty,
                 })
         return records
+
+    def write(self, vals):
+        result = super(InvoiceRecord, self).write(vals)
+        if 'status' in vals and vals['status'] == 'done':
+            for rec in self:
+                if rec.stock_item_id:
+                    new_stock = rec.stock_item_id.current_qty + rec.qty
+                    rec.stock_item_id.with_context(skip_stock_log=True).write({'current_qty': new_stock})
+                    self.env['simple_erp.stock_change_log'].sudo().create({
+                        'source': 'invoice',
+                        'reference': f'Buy Request {rec.id}',
+                        'raw_product_id': rec.stock_item_id.id,
+                        'change_amount': rec.qty,
+                        'stock_in_amount': rec.qty,
+                        'stock_out_amount': 0.0,
+                        'resulting_stock': rec.stock_item_id.current_qty,
+                    })
+        return result
 
 
 class DashboardMetrics(models.Model):
@@ -191,13 +226,14 @@ class DashboardMetrics(models.Model):
                     UNION ALL
 
                     SELECT
-                        ir.date::date AS date,
+                        ir.request_date::date AS date,
                         0::float AS income_amount,
-                        SUM(ir.expense_amount) AS expense_amount,
-                        SUM(ir.quantity_purchased) AS stock_in_amount,
+                        SUM(ir.amount_total) AS expense_amount,
+                        SUM(ir.qty) AS stock_in_amount,
                         0::float AS stock_out_amount
                     FROM simple_erp_invoice_record ir
-                    GROUP BY ir.date
+                    WHERE ir.status = 'done'
+                    GROUP BY ir.request_date
                 ) t
                 GROUP BY t.date
             )
@@ -237,11 +273,12 @@ class DashboardFinanceLine(models.Model):
                         UNION ALL
 
                         SELECT
-                            ir.date::date AS date,
+                            ir.request_date::date AS date,
                             0::float AS income_amount,
-                            SUM(ir.expense_amount) AS expense_amount
+                            SUM(ir.amount_total) AS expense_amount
                         FROM simple_erp_invoice_record ir
-                        GROUP BY ir.date
+                        WHERE ir.status = 'done'
+                        GROUP BY ir.request_date
                     ) t
                     GROUP BY t.date
                 )

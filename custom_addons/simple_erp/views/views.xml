@@ -7,7 +7,10 @@
     <field name="arch" type="xml">
       <tree string="Raw Products">
         <field name="name" />
-        <field name="stock_amount" />
+        <field name="item_type" />
+        <field name="current_qty" />
+        <field name="unit_of_measurement" />
+        <field name="min_qty" />
       </tree>
     </field>
   </record>
@@ -84,19 +87,25 @@
     <field name="name">simple_erp.invoice_record.form</field>
     <field name="model">simple_erp.invoice_record</field>
     <field name="arch" type="xml">
-      <form string="Invoice Entry">
+      <form string="Buy Request Entry">
         <sheet>
           <field name="receipt_image" widget="image" class="oe_avatar" />
           <group>
             <group>
-              <field name="name" />
-              <field name="date" />
+              <field name="user_id" />
+              <field name="stock_item_id" />
+              <field name="request_date" />
+              <field name="done_date" />
             </group>
             <group>
-              <field name="product_id" />
-              <field name="quantity_purchased" />
-              <field name="expense_amount" />
+              <field name="status" />
+              <field name="qty" />
+              <field name="unit_price" />
+              <field name="amount_total" />
             </group>
+          </group>
+          <group>
+            <field name="note" />
           </group>
         </sheet>
       </form>
@@ -108,12 +117,13 @@
     <field name="name">simple_erp.invoice_record.tree</field>
     <field name="model">simple_erp.invoice_record</field>
     <field name="arch" type="xml">
-      <tree string="Invoices &amp; Expenses">
-        <field name="date" />
-        <field name="name" />
-        <field name="product_id" />
-        <field name="quantity_purchased" />
-        <field name="expense_amount" sum="Total Expense" />
+      <tree string="Buy Requests">
+        <field name="request_date" />
+        <field name="user_id" />
+        <field name="stock_item_id" />
+        <field name="status" />
+        <field name="qty" />
+        <field name="amount_total" sum="Total Expense" />
       </tree>
     </field>
   </record>
@@ -123,9 +133,9 @@
     <field name="name">simple_erp.invoice_record.graph</field>
     <field name="model">simple_erp.invoice_record</field>
     <field name="arch" type="xml">
-      <graph string="Expense Dashboard" type="bar">
-        <field name="date" type="row" interval="month" />
-        <field name="expense_amount" type="measure" />
+      <graph string="Buy Request Dashboard" type="bar">
+        <field name="request_date" type="row" interval="month" />
+        <field name="amount_total" type="measure" />
       </graph>
     </field>
   </record>
@@ -199,10 +209,14 @@
         <filter string="Date" name="sales_date_filter" date="date" />
         <separator />
         <filter string="Today" name="sales_today" domain="[('date', '=', context_today())]" />
-        <filter string="This Month" name="sales_this_month" domain="[('date', '&gt;=', context_today().strftime('%%Y-%%m-01')), ('date', '&lt;=', context_today())]" />
-        <filter string="Last 30 Days" name="sales_last_30" domain="[('date', '&gt;=', context_today() - relativedelta(days=30)), ('date', '&lt;=', context_today())]" />
-        <filter string="Last 90 Days" name="sales_last_90" domain="[('date', '&gt;=', context_today() - relativedelta(days=90)), ('date', '&lt;=', context_today())]" />
-        <filter string="This Year" name="sales_this_year" domain="[('date', '&gt;=', context_today().strftime('%%Y-01-01')), ('date', '&lt;=', context_today())]" />
+        <filter string="This Month" name="sales_this_month"
+          domain="[('date', '&gt;=', context_today().strftime('%%Y-%%m-01')), ('date', '&lt;=', context_today())]" />
+        <filter string="Last 30 Days" name="sales_last_30"
+          domain="[('date', '&gt;=', context_today() - relativedelta(days=30)), ('date', '&lt;=', context_today())]" />
+        <filter string="Last 90 Days" name="sales_last_90"
+          domain="[('date', '&gt;=', context_today() - relativedelta(days=90)), ('date', '&lt;=', context_today())]" />
+        <filter string="This Year" name="sales_this_year"
+          domain="[('date', '&gt;=', context_today().strftime('%%Y-01-01')), ('date', '&lt;=', context_today())]" />
       </search>
     </field>
   </record>
@@ -212,13 +226,18 @@
     <field name="model">simple_erp.invoice_record</field>
     <field name="arch" type="xml">
       <search string="Expense Dashboard Filters">
-        <filter string="Date" name="invoice_date_filter" date="date" />
+        <filter string="Date" name="invoice_date_filter" date="request_date" />
         <separator />
-        <filter string="Today" name="invoice_today" domain="[('date', '=', context_today())]" />
-        <filter string="This Month" name="invoice_this_month" domain="[('date', '&gt;=', context_today().strftime('%%Y-%%m-01')), ('date', '&lt;=', context_today())]" />
-        <filter string="Last 30 Days" name="invoice_last_30" domain="[('date', '&gt;=', context_today() - relativedelta(days=30)), ('date', '&lt;=', context_today())]" />
-        <filter string="Last 90 Days" name="invoice_last_90" domain="[('date', '&gt;=', context_today() - relativedelta(days=90)), ('date', '&lt;=', context_today())]" />
-        <filter string="This Year" name="invoice_this_year" domain="[('date', '&gt;=', context_today().strftime('%%Y-01-01')), ('date', '&lt;=', context_today())]" />
+        <filter string="Today" name="invoice_today"
+          domain="[('request_date', '=', context_today())]" />
+        <filter string="This Month" name="invoice_this_month"
+          domain="[('request_date', '&gt;=', context_today().strftime('%%Y-%%m-01')), ('request_date', '&lt;=', context_today())]" />
+        <filter string="Last 30 Days" name="invoice_last_30"
+          domain="[('request_date', '&gt;=', context_today() - relativedelta(days=30)), ('request_date', '&lt;=', context_today())]" />
+        <filter string="Last 90 Days" name="invoice_last_90"
+          domain="[('request_date', '&gt;=', context_today() - relativedelta(days=90)), ('request_date', '&lt;=', context_today())]" />
+        <filter string="This Year" name="invoice_this_year"
+          domain="[('request_date', '&gt;=', context_today().strftime('%%Y-01-01')), ('request_date', '&lt;=', context_today())]" />
       </search>
     </field>
   </record>
@@ -230,10 +249,14 @@
       <search string="Stock Dashboard Filters">
         <filter string="Date" name="stock_date_filter" date="changed_at" />
         <separator />
-        <filter string="Today" name="stock_today" domain="[('changed_at', '&gt;=', context_today())]" />
-        <filter string="Last 30 Days" name="stock_last_30" domain="[('changed_at', '&gt;=', context_today() - relativedelta(days=30)), ('changed_at', '&lt;=', context_today())]" />
-        <filter string="Last 90 Days" name="stock_last_90" domain="[('changed_at', '&gt;=', context_today() - relativedelta(days=90)), ('changed_at', '&lt;=', context_today())]" />
-        <filter string="This Year" name="stock_this_year" domain="[('changed_at', '&gt;=', context_today().strftime('%%Y-01-01')), ('changed_at', '&lt;=', context_today())]" />
+        <filter string="Today" name="stock_today"
+          domain="[('changed_at', '&gt;=', context_today())]" />
+        <filter string="Last 30 Days" name="stock_last_30"
+          domain="[('changed_at', '&gt;=', context_today() - relativedelta(days=30)), ('changed_at', '&lt;=', context_today())]" />
+        <filter string="Last 90 Days" name="stock_last_90"
+          domain="[('changed_at', '&gt;=', context_today() - relativedelta(days=90)), ('changed_at', '&lt;=', context_today())]" />
+        <filter string="This Year" name="stock_this_year"
+          domain="[('changed_at', '&gt;=', context_today().strftime('%%Y-01-01')), ('changed_at', '&lt;=', context_today())]" />
       </search>
     </field>
   </record>
@@ -247,10 +270,14 @@
         <field name="metric" />
         <separator />
         <filter string="Today" name="finance_today" domain="[('date', '=', context_today())]" />
-        <filter string="This Month" name="finance_this_month" domain="[('date', '&gt;=', context_today().strftime('%%Y-%%m-01')), ('date', '&lt;=', context_today())]" />
-        <filter string="Last 30 Days" name="finance_last_30" domain="[('date', '&gt;=', context_today() - relativedelta(days=30)), ('date', '&lt;=', context_today())]" />
-        <filter string="Last 90 Days" name="finance_last_90" domain="[('date', '&gt;=', context_today() - relativedelta(days=90)), ('date', '&lt;=', context_today())]" />
-        <filter string="This Year" name="finance_this_year" domain="[('date', '&gt;=', context_today().strftime('%%Y-01-01')), ('date', '&lt;=', context_today())]" />
+        <filter string="This Month" name="finance_this_month"
+          domain="[('date', '&gt;=', context_today().strftime('%%Y-%%m-01')), ('date', '&lt;=', context_today())]" />
+        <filter string="Last 30 Days" name="finance_last_30"
+          domain="[('date', '&gt;=', context_today() - relativedelta(days=30)), ('date', '&lt;=', context_today())]" />
+        <filter string="Last 90 Days" name="finance_last_90"
+          domain="[('date', '&gt;=', context_today() - relativedelta(days=90)), ('date', '&lt;=', context_today())]" />
+        <filter string="This Year" name="finance_this_year"
+          domain="[('date', '&gt;=', context_today().strftime('%%Y-01-01')), ('date', '&lt;=', context_today())]" />
       </search>
     </field>
   </record>
