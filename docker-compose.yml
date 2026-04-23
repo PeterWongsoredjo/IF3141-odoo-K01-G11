@@ -15,7 +15,8 @@ services:
       --db_port=5432 
       --db_user=odoo 
       --db_password=password 
-      -i base
+      --addons-path=/mnt/extras-addons,/usr/lib/python3/dist-packages/odoo/addons
+      -i base,simple_erp
       --load-language=en_US
       --without-demo=all
 

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- Raw Products Views -->
+  <record id="view_raw_product_tree" model="ir.ui.view">
+    <field name="name">simple_erp.raw_product.tree</field>
+    <field name="model">simple_erp.raw_product</field>
+    <field name="arch" type="xml">
+      <tree string="Raw Products">
+        <field name="name" />
+        <field name="stock_amount" />
+      </tree>
+    </field>
+  </record>
+
+  <!-- Raw Products Action -->
+  <record id="action_raw_product" model="ir.actions.act_window">
+    <field name="name">Raw Products Stock</field>
+    <field name="res_model">simple_erp.raw_product</field>
+    <field name="view_mode">tree,form</field>
+  </record>
+
+  <!-- Finished Products Views -->
+  <record id="view_product_tree" model="ir.ui.view">
+    <field name="name">simple_erp.product.tree</field>
+    <field name="model">simple_erp.product</field>
+    <field name="arch" type="xml">
+      <tree string="Finished Products">
+        <field name="name" />
+        <field name="stock_amount" />
+      </tree>
+    </field>
+  </record>
+
+  <!-- Finished Products Action -->
+  <record id="action_product" model="ir.actions.act_window">
+    <field name="name">Products</field>
+    <field name="res_model">simple_erp.product</field>
+    <field name="view_mode">tree,form</field>
+  </record>
+
+  <!-- Sales CSV Import Views -->
+  <record id="view_sales_tree" model="ir.ui.view">
+    <field name="name">simple_erp.sales_record.tree</field>
+    <field name="model">simple_erp.sales_record</field>
+    <field name="arch" type="xml">
+      <tree string="Sales Ledger">
+        <field name="date" />
+        <field name="name" />
+        <field name="product_id" />
+        <field name="quantity_sold" />
+        <field name="income_amount" sum="Total Income" />
+      </tree>
+    </field>
+  </record>
+
+  <!-- Sales Dashboard Graph -->
+  <record id="view_sales_graph" model="ir.ui.view">
+    <field name="name">simple_erp.sales_record.graph</field>
+    <field name="model">simple_erp.sales_record</field>
+    <field name="arch" type="xml">
+      <graph string="Income Dashboard" type="bar">
+        <field name="date" type="row" interval="month" />
+        <field name="income_amount" type="measure" />
+      </graph>
+    </field>
+  </record>
+
+  <!-- Sales Action -->
+  <record id="action_sales_record" model="ir.actions.act_window">
+    <field name="name">Sales Imports</field>
+    <field name="res_model">simple_erp.sales_record</field>
+    <field name="view_mode">tree,form,graph,pivot</field>
+  </record>
+
+  <!-- Invoice Form View to support Image attachment -->
+  <record id="view_invoice_form" model="ir.ui.view">
+    <field name="name">simple_erp.invoice_record.form</field>
+    <field name="model">simple_erp.invoice_record</field>
+    <field name="arch" type="xml">
+      <form string="Invoice Entry">
+        <sheet>
+          <field name="receipt_image" widget="image" class="oe_avatar" />
+          <group>
+            <group>
+              <field name="name" />
+              <field name="date" />
+            </group>
+            <group>
+              <field name="product_id" />
+              <field name="quantity_purchased" />
+              <field name="expense_amount" />
+            </group>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <!-- Invoice Tree View -->
+  <record id="view_invoice_tree" model="ir.ui.view">
+    <field name="name">simple_erp.invoice_record.tree</field>
+    <field name="model">simple_erp.invoice_record</field>
+    <field name="arch" type="xml">
+      <tree string="Invoices &amp; Expenses">
+        <field name="date" />
+        <field name="name" />
+        <field name="product_id" />
+        <field name="quantity_purchased" />
+        <field name="expense_amount" sum="Total Expense" />
+      </tree>
+    </field>
+  </record>
+
+  <!-- Invoice Dashboard Graph -->
+  <record id="view_invoice_graph" model="ir.ui.view">
+    <field name="name">simple_erp.invoice_record.graph</field>
+    <field name="model">simple_erp.invoice_record</field>
+    <field name="arch" type="xml">
+      <graph string="Expense Dashboard" type="bar">
+        <field name="date" type="row" interval="month" />
+        <field name="expense_amount" type="measure" />
+      </graph>
+    </field>
+  </record>
+
+  <!-- Invoices Action -->
+  <record id="action_invoice_record" model="ir.actions.act_window">
+    <field name="name">Invoices Upload</field>
+    <field name="res_model">simple_erp.invoice_record</field>
+    <field name="view_mode">tree,form,graph,pivot</field>
+  </record>
+
+  <!-- Main Menus -->
+  <menuitem id="menu_erp_root" name="Business ERP" sequence="10" />
+
+  <menuitem id="menu_erp_raw_products" name="Stock" parent="menu_erp_root"
+    action="action_raw_product" sequence="1" />
+  <menuitem id="menu_erp_products" name="Product" parent="menu_erp_root" action="action_product"
+    sequence="2" />
+  <menuitem id="menu_erp_sales" name="Sales CSV Reader" parent="menu_erp_root"
+    action="action_sales_record" sequence="3" />
+  <menuitem id="menu_erp_invoices" name="Invoice Upload" parent="menu_erp_root"
+    action="action_invoice_record" sequence="4" />
+
+</odoo>
