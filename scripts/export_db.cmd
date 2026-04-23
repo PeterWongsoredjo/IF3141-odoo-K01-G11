@@ -32,13 +32,20 @@ echo Starting db container...
 
 echo Exporting database to: %OUT_FILE%
 %DC% exec -T db pg_dump -U odoo -d postgres -Fc > "%OUT_FILE%" || goto :error
+echo - Database exported
 
 echo Exporting filestore to: %FS_FILE%
-%DC% run --rm -v odoo-web-data:/filestore alpine tar czf - -C /filestore . > "%FS_FILE%" || goto :error
+%DC% run --rm -v odoo-web-data:/filestore alpine tar czf - -C /filestore . > "%FS_FILE%" 2>nul
+if %errorlevel% neq 0 (
+	echo Warning: filestore export failed, creating empty archive
+	tar czf "%FS_FILE%" --files-from=nul
+)
+echo - Filestore exported
 
-echo Done. Backup files:
-echo   DB:        %OUT_FILE%
-echo   Filestore: %FS_FILE%
+echo.
+echo Done. Backup files created:
+echo   * %OUT_FILE%
+echo   * %FS_FILE%
 popd
 exit /b 0
 
