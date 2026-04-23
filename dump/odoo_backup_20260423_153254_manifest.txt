@@ -1,0 +1,10 @@
+ODOO BACKUP MANIFEST
+Generated: Thu 04/23/2026 15:32:59.86
+Version: 1.0
+
+Files:
+  * Database:  C:\Users\ASUS\Documents\SEMESTER_6\SI\repo-odoo\IF3141-odoo-K01-G11\dump\odoo_backup_20260423_153254.dump
+  * Filestore: C:\Users\ASUS\Documents\SEMESTER_6\SI\repo-odoo\IF3141-odoo-K01-G11\dump\odoo_backup_20260423_153254_filestore.tar.gz
+  * Config:    C:\Users\ASUS\Documents\SEMESTER_6\SI\repo-odoo\IF3141-odoo-K01-G11\dump\odoo_backup_20260423_153254_config.tar.gz
+
+To restore, use: .\scripts\import_db.cmd C:\Users\ASUS\Documents\SEMESTER_6\SI\repo-odoo\IF3141-odoo-K01-G11\dump\odoo_backup_20260423_153254.dump
