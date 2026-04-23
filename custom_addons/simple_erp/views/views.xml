@@ -26,7 +26,6 @@
     <field name="arch" type="xml">
       <tree string="Finished Products">
         <field name="name" />
-        <field name="stock_amount" />
       </tree>
     </field>
   </record>
