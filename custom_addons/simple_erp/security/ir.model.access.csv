@@ -4,3 +4,5 @@ access_simple_erp_product,simple_erp.product,model_simple_erp_product,base.group
 access_simple_erp_sales_record,simple_erp.sales_record,model_simple_erp_sales_record,base.group_user,1,1,1,1
 access_simple_erp_invoice_record,simple_erp.invoice_record,model_simple_erp_invoice_record,base.group_user,1,1,1,1
 access_simple_erp_dashboard_metrics,simple_erp.dashboard_metrics,model_simple_erp_dashboard_metrics,base.group_user,1,0,0,0
+access_simple_erp_stock_change_log,simple_erp.stock_change_log,model_simple_erp_stock_change_log,base.group_user,1,0,0,0
+access_simple_erp_dashboard_finance_line,simple_erp.dashboard_finance_line,model_simple_erp_dashboard_finance_line,base.group_user,1,0,0,0

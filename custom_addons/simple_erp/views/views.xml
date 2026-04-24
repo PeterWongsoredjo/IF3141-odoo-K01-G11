@@ -154,6 +154,7 @@
         <field name="date" />
         <field name="income_amount" sum="Income" />
         <field name="expense_amount" sum="Expense" />
+        <field name="net_total_amount" sum="Net Total" />
         <field name="stock_in_amount" sum="Stock In" />
         <field name="stock_out_amount" sum="Stock Out" />
       </tree>
@@ -162,22 +163,113 @@
 
   <record id="view_dashboard_finance_graph" model="ir.ui.view">
     <field name="name">simple_erp.dashboard_metrics.finance.graph</field>
-    <field name="model">simple_erp.dashboard_metrics</field>
+    <field name="model">simple_erp.dashboard_finance_line</field>
     <field name="arch" type="xml">
-      <graph string="Income vs Expense" type="bar">
+      <graph string="Income vs Expense vs Net Total" type="line">
         <field name="date" type="row" interval="month" />
-        <field name="income_amount" type="measure" />
-        <field name="expense_amount" type="measure" />
+        <field name="metric" type="col" />
+        <field name="amount" type="measure" />
       </graph>
     </field>
   </record>
 
+  <record id="view_stock_change_log_tree" model="ir.ui.view">
+    <field name="name">simple_erp.stock_change_log.tree</field>
+    <field name="model">simple_erp.stock_change_log</field>
+    <field name="arch" type="xml">
+      <tree string="Stock Change History" create="false" edit="false" delete="false">
+        <field name="changed_at" />
+        <field name="source" />
+        <field name="reference" />
+        <field name="product_id" />
+        <field name="raw_product_id" />
+        <field name="change_amount" sum="Net Change" />
+        <field name="stock_in_amount" sum="Stock In" />
+        <field name="stock_out_amount" sum="Stock Out" />
+        <field name="resulting_stock" />
+      </tree>
+    </field>
+  </record>
+
+  <record id="view_sales_dashboard_search" model="ir.ui.view">
+    <field name="name">simple_erp.sales_record.dashboard.search</field>
+    <field name="model">simple_erp.sales_record</field>
+    <field name="arch" type="xml">
+      <search string="Sales Dashboard Filters">
+        <filter string="Date" name="sales_date_filter" date="date" />
+        <separator />
+        <filter string="Today" name="sales_today" domain="[('date', '=', context_today())]" />
+        <filter string="This Month" name="sales_this_month" domain="[('date', '&gt;=', context_today().strftime('%%Y-%%m-01')), ('date', '&lt;=', context_today())]" />
+        <filter string="Last 30 Days" name="sales_last_30" domain="[('date', '&gt;=', context_today() - relativedelta(days=30)), ('date', '&lt;=', context_today())]" />
+        <filter string="Last 90 Days" name="sales_last_90" domain="[('date', '&gt;=', context_today() - relativedelta(days=90)), ('date', '&lt;=', context_today())]" />
+        <filter string="This Year" name="sales_this_year" domain="[('date', '&gt;=', context_today().strftime('%%Y-01-01')), ('date', '&lt;=', context_today())]" />
+      </search>
+    </field>
+  </record>
+
+  <record id="view_invoice_dashboard_search" model="ir.ui.view">
+    <field name="name">simple_erp.invoice_record.dashboard.search</field>
+    <field name="model">simple_erp.invoice_record</field>
+    <field name="arch" type="xml">
+      <search string="Expense Dashboard Filters">
+        <filter string="Date" name="invoice_date_filter" date="date" />
+        <separator />
+        <filter string="Today" name="invoice_today" domain="[('date', '=', context_today())]" />
+        <filter string="This Month" name="invoice_this_month" domain="[('date', '&gt;=', context_today().strftime('%%Y-%%m-01')), ('date', '&lt;=', context_today())]" />
+        <filter string="Last 30 Days" name="invoice_last_30" domain="[('date', '&gt;=', context_today() - relativedelta(days=30)), ('date', '&lt;=', context_today())]" />
+        <filter string="Last 90 Days" name="invoice_last_90" domain="[('date', '&gt;=', context_today() - relativedelta(days=90)), ('date', '&lt;=', context_today())]" />
+        <filter string="This Year" name="invoice_this_year" domain="[('date', '&gt;=', context_today().strftime('%%Y-01-01')), ('date', '&lt;=', context_today())]" />
+      </search>
+    </field>
+  </record>
+
+  <record id="view_stock_dashboard_search" model="ir.ui.view">
+    <field name="name">simple_erp.stock_change_log.dashboard.search</field>
+    <field name="model">simple_erp.stock_change_log</field>
+    <field name="arch" type="xml">
+      <search string="Stock Dashboard Filters">
+        <filter string="Date" name="stock_date_filter" date="changed_at" />
+        <separator />
+        <filter string="Today" name="stock_today" domain="[('changed_at', '&gt;=', context_today())]" />
+        <filter string="Last 30 Days" name="stock_last_30" domain="[('changed_at', '&gt;=', context_today() - relativedelta(days=30)), ('changed_at', '&lt;=', context_today())]" />
+        <filter string="Last 90 Days" name="stock_last_90" domain="[('changed_at', '&gt;=', context_today() - relativedelta(days=90)), ('changed_at', '&lt;=', context_today())]" />
+        <filter string="This Year" name="stock_this_year" domain="[('changed_at', '&gt;=', context_today().strftime('%%Y-01-01')), ('changed_at', '&lt;=', context_today())]" />
+      </search>
+    </field>
+  </record>
+
+  <record id="view_finance_dashboard_search" model="ir.ui.view">
+    <field name="name">simple_erp.dashboard_finance_line.dashboard.search</field>
+    <field name="model">simple_erp.dashboard_finance_line</field>
+    <field name="arch" type="xml">
+      <search string="Finance Dashboard Filters">
+        <filter string="Date" name="finance_date_filter" date="date" />
+        <field name="metric" />
+        <separator />
+        <filter string="Today" name="finance_today" domain="[('date', '=', context_today())]" />
+        <filter string="This Month" name="finance_this_month" domain="[('date', '&gt;=', context_today().strftime('%%Y-%%m-01')), ('date', '&lt;=', context_today())]" />
+        <filter string="Last 30 Days" name="finance_last_30" domain="[('date', '&gt;=', context_today() - relativedelta(days=30)), ('date', '&lt;=', context_today())]" />
+        <filter string="Last 90 Days" name="finance_last_90" domain="[('date', '&gt;=', context_today() - relativedelta(days=90)), ('date', '&lt;=', context_today())]" />
+        <filter string="This Year" name="finance_this_year" domain="[('date', '&gt;=', context_today().strftime('%%Y-01-01')), ('date', '&lt;=', context_today())]" />
+      </search>
+    </field>
+  </record>
+
+  <!-- Attach dashboard search views after their XML IDs are defined -->
+  <record id="action_sales_dashboard" model="ir.actions.act_window">
+    <field name="search_view_id" ref="view_sales_dashboard_search" />
+  </record>
+
+  <record id="action_invoice_dashboard" model="ir.actions.act_window">
+    <field name="search_view_id" ref="view_invoice_dashboard_search" />
+  </record>
+
   <record id="view_dashboard_stock_graph" model="ir.ui.view">
-    <field name="name">simple_erp.dashboard_metrics.stock.graph</field>
-    <field name="model">simple_erp.dashboard_metrics</field>
+    <field name="name">simple_erp.stock_change_log.graph</field>
+    <field name="model">simple_erp.stock_change_log</field>
     <field name="arch" type="xml">
       <graph string="Total Stock Changes" type="line">
-        <field name="date" type="row" interval="month" />
+        <field name="changed_at" type="row" interval="day" />
         <field name="stock_in_amount" type="measure" />
         <field name="stock_out_amount" type="measure" />
       </graph>
@@ -186,16 +278,18 @@
 
   <record id="action_finance_dashboard" model="ir.actions.act_window">
     <field name="name">Income vs Expense</field>
-    <field name="res_model">simple_erp.dashboard_metrics</field>
-    <field name="view_mode">graph,pivot,tree</field>
+    <field name="res_model">simple_erp.dashboard_finance_line</field>
+    <field name="view_mode">graph,pivot</field>
     <field name="view_id" ref="view_dashboard_finance_graph" />
+    <field name="search_view_id" ref="view_finance_dashboard_search" />
   </record>
 
   <record id="action_stock_change_dashboard" model="ir.actions.act_window">
     <field name="name">Total Stock Changes</field>
-    <field name="res_model">simple_erp.dashboard_metrics</field>
+    <field name="res_model">simple_erp.stock_change_log</field>
     <field name="view_mode">graph,pivot,tree</field>
     <field name="view_id" ref="view_dashboard_stock_graph" />
+    <field name="search_view_id" ref="view_stock_dashboard_search" />
   </record>
 
   <!-- Main Menus -->
