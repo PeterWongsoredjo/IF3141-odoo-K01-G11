@@ -5,13 +5,34 @@
     <field name="name">simple_erp.raw_product.tree</field>
     <field name="model">simple_erp.raw_product</field>
     <field name="arch" type="xml">
-      <tree string="Raw Products">
+      <tree string="Raw Products" decoration-danger="is_low_stock">
         <field name="name" />
         <field name="item_type" />
         <field name="current_qty" />
         <field name="unit_of_measurement" />
         <field name="min_qty" />
+        <field name="is_low_stock" column_invisible="1" />
       </tree>
+    </field>
+  </record>
+
+  <record id="view_raw_product_form" model="ir.ui.view">
+    <field name="name">simple_erp.raw_product.form</field>
+    <field name="model">simple_erp.raw_product</field>
+    <field name="arch" type="xml">
+      <form string="Raw Product">
+        <sheet>
+          <widget name="web_ribbon" title="Stok Menipis!" bg_color="bg-danger" invisible="is_low_stock == False"/>
+          <group>
+            <field name="name"/>
+            <field name="item_type"/>
+            <field name="unit_of_measurement"/>
+            <field name="current_qty"/>
+            <field name="min_qty"/>
+            <field name="is_low_stock" invisible="1"/>
+          </group>
+        </sheet>
+      </form>
     </field>
   </record>
 

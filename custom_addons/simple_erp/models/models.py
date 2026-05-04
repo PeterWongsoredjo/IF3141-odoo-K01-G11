@@ -31,6 +31,12 @@ class RawProduct(models.Model):
     unit_of_measurement = fields.Char(string='Unit of Measurement')
     current_qty = fields.Float(string='Current Quantity', default=0.0)
     min_qty = fields.Float(string='Minimum Quantity', default=0.0)
+    is_low_stock = fields.Boolean(string='Low Stock', compute='_compute_is_low_stock', store=True)
+
+    @api.depends('current_qty', 'min_qty')
+    def _compute_is_low_stock(self):
+        for rec in self:
+            rec.is_low_stock = (rec.current_qty or 0.0) <= (rec.min_qty or 0.0)
 
     def write(self, vals):
         if self.env.context.get('skip_stock_log') or 'current_qty' not in vals:
