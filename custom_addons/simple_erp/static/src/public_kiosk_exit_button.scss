@@ -1,0 +1,27 @@
+.o_simple_erp_kiosk_exit_button {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1100;
+    border: 0;
+    background: rgba(255, 255, 255, 0.94);
+    color: #1f2937;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 0.85rem 1.15rem;
+}
+
+.o_simple_erp_kiosk_exit_button:hover,
+.o_simple_erp_kiosk_exit_button:focus {
+    background: #ffffff;
+    color: #111827;
+}
+
+@media (max-width: 768px) {
+    .o_simple_erp_kiosk_exit_button {
+        top: 0.75rem;
+        right: 0.75rem;
+        padding: 0.7rem 1rem;
+        font-size: 0.95rem;
+    }
+}

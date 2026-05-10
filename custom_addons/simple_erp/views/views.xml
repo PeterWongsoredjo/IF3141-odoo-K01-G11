@@ -353,6 +353,19 @@
     <field name="view_mode">tree,form,graph,pivot</field>
   </record>
 
+  <record id="action_erp_attendance_kiosk" model="ir.actions.server">
+    <field name="name">Attendance Kiosk</field>
+    <field name="model_id" ref="base.model_res_company"/>
+    <field name="state">code</field>
+    <field name="code">
+action = {
+    'type': 'ir.actions.act_url',
+    'target': 'self',
+    'url': f'/hr_attendance/kiosk_mode_menu/{env.company.id}',
+}
+    </field>
+  </record>
+
   <!-- Main Menus -->
   <menuitem id="menu_erp_root" name="Business ERP" sequence="10" />
 
@@ -378,5 +391,9 @@
     action="action_erp_employees" sequence="6" />
   <menuitem id="menu_erp_attendance" name="Attendance" parent="menu_erp_root"
     action="action_erp_attendance" sequence="7" />
+  <menuitem id="menu_erp_attendance_kiosk" name="Attendance Kiosk" parent="menu_erp_attendance"
+    action="action_erp_attendance_kiosk" sequence="1" />
+  <menuitem id="menu_erp_attendance_back" name="Back to Attendance" parent="menu_erp_attendance"
+    action="action_erp_attendance" sequence="2" />
 
 </odoo>
