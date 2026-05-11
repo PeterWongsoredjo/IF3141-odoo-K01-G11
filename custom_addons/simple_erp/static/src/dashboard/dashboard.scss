@@ -1,0 +1,382 @@
+// Kopi Eyang — Executive Insights Dashboard
+
+$blue-deep:  #002b50;
+$blue-mid:   #1e6fbd;
+$blue-light: #e8f0fe;
+$success:    #10b981;
+$danger:     #ef4444;
+$amber:      #f59e0b;
+$bg:         #f0f4f8;
+$card-bg:    rgba(255, 255, 255, 0.88);
+$text:       #1e293b;
+$text-muted: #64748b;
+$border:     rgba(0, 43, 80, 0.1);
+$shadow:     0 4px 24px rgba(0, 43, 80, 0.08);
+$shadow-lg:  0 12px 40px rgba(0, 43, 80, 0.13);
+
+// ── Fix scrolling without breaking layout ───────────────────────────────────
+// JS adds .erpd_active to .o_action on mount and computes the available height
+// (viewport - top offset) so the dashboard fills the space below the navbar
+// exactly. We don't override .o_action's height/flex — only hide its inner
+// control panel if Odoo renders one.
+.erpd_active {
+    > .o_control_panel { display: none !important; }
+    > .o_content       { padding: 0 !important; }
+}
+
+// ── Root ─────────────────────────────────────────────────────────────────────
+// height is set inline by JS (_fitHeight). overflow: auto enables scroll on
+// both axes whenever the inner content exceeds the computed box.
+.erpd_root {
+    overflow: auto;
+    font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: $bg;
+    padding-bottom: 48px;
+    color: $text;
+    -webkit-font-smoothing: antialiased;
+}
+
+// ── Header ───────────────────────────────────────────────────────────────────
+.erpd_header {
+    background: $blue-deep;
+    padding: 20px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.22);
+}
+
+.erpd_header_brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.erpd_logo_mark {
+    width: 48px;
+    height: 48px;
+    background: #fff;
+    color: $blue-deep;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 17px;
+    letter-spacing: -1px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+}
+
+.erpd_brand_text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.erpd_brand_name {
+    color: #fff;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.4px;
+    line-height: 1.2;
+}
+
+.erpd_brand_tagline {
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+}
+
+.erpd_live_badge {
+    background: rgba(16, 185, 129, 0.18);
+    color: #6ee7b7;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    border-radius: 100px;
+    padding: 5px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    animation: erpd-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes erpd-pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.55; }
+}
+
+// ── Filter Bar ────────────────────────────────────────────────────────────────
+.erpd_filter_bar {
+    background: #fff;
+    border-bottom: 1px solid $border;
+    padding: 12px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    box-shadow: 0 1px 4px rgba(0, 43, 80, 0.06);
+}
+
+.erpd_presets {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.erpd_preset_btn {
+    background: transparent;
+    border: 1px solid $border;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    color: $text-muted;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+
+    &:hover {
+        background: $blue-light;
+        border-color: $blue-mid;
+        color: $blue-mid;
+    }
+
+    &.erpd_preset_active {
+        background: $blue-deep;
+        border-color: $blue-deep;
+        color: #fff;
+        font-weight: 600;
+    }
+}
+
+.erpd_custom_range {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.erpd_range_label {
+    font-size: 12px;
+    font-weight: 500;
+    color: $text-muted;
+    white-space: nowrap;
+}
+
+.erpd_date_input {
+    border: 1px solid $border;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    color: $text;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.15s;
+    font-family: inherit;
+
+    &:focus {
+        border-color: $blue-mid;
+        box-shadow: 0 0 0 3px rgba(30, 111, 189, 0.12);
+    }
+}
+
+.erpd_apply_btn {
+    background: $blue-deep;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 18px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+    white-space: nowrap;
+    font-family: inherit;
+
+    &:hover:not([disabled]) { background: $blue-mid; }
+    &[disabled]             { opacity: 0.6; cursor: not-allowed; }
+}
+
+// ── Loading ───────────────────────────────────────────────────────────────────
+.erpd_loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 50vh;
+    gap: 18px;
+    color: $text-muted;
+
+    p { font-size: 14px; margin: 0; }
+}
+
+.erpd_spinner {
+    width: 42px;
+    height: 42px;
+    border: 3px solid $border;
+    border-top-color: $blue-deep;
+    border-radius: 50%;
+    animation: erpd-spin 0.75s linear infinite;
+}
+
+@keyframes erpd-spin {
+    to { transform: rotate(360deg); }
+}
+
+// ── KPI Strip ─────────────────────────────────────────────────────────────────
+.erpd_kpi_strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    padding: 24px 36px 12px;
+
+    @media (max-width: 1100px) { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 600px)  { grid-template-columns: 1fr; }
+}
+
+.erpd_kpi_card {
+    background: $card-bg;
+    border-radius: 16px;
+    padding: 20px 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid $border;
+    box-shadow: $shadow;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+    &:hover {
+        transform: translateY(-3px);
+        box-shadow: $shadow-lg;
+    }
+}
+
+.erpd_kpi_icon_wrap {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.erpd_kpi_income  .erpd_kpi_icon_wrap { background: rgba(16, 185, 129, 0.12); color: $success; }
+.erpd_kpi_expense .erpd_kpi_icon_wrap { background: rgba(239, 68, 68, 0.12);  color: $danger; }
+.erpd_kpi_net     .erpd_kpi_icon_wrap { background: rgba(0, 43, 80, 0.1);     color: $blue-deep; }
+.erpd_kpi_stock   .erpd_kpi_icon_wrap { background: rgba(245, 158, 11, 0.12); color: $amber; }
+
+.erpd_kpi_info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.erpd_kpi_label {
+    font-size: 10.5px;
+    color: $text-muted;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.erpd_kpi_value {
+    font-size: 19px;
+    font-weight: 700;
+    color: $text;
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+// ── Charts Grid ───────────────────────────────────────────────────────────────
+.erpd_charts_grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    padding: 16px 36px;
+
+    @media (max-width: 960px) { grid-template-columns: 1fr; }
+}
+
+.erpd_chart_card {
+    background: $card-bg;
+    border-radius: 20px;
+    padding: 24px 26px;
+    border: 1px solid $border;
+    box-shadow: $shadow;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+    &:hover {
+        transform: translateY(-3px);
+        box-shadow: $shadow-lg;
+    }
+}
+
+.erpd_chart_card_header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.erpd_chart_title {
+    font-size: 15px;
+    font-weight: 700;
+    color: $text;
+    margin: 0 0 3px;
+    letter-spacing: -0.2px;
+}
+
+.erpd_chart_subtitle {
+    font-size: 12px;
+    color: $text-muted;
+    margin: 0;
+    font-weight: 400;
+}
+
+.erpd_chart_badge {
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.erpd_badge_blue  { background: $blue-light;              color: $blue-mid; }
+.erpd_badge_red   { background: rgba(239, 68, 68, 0.1);  color: $danger; }
+.erpd_badge_green { background: rgba(16, 185, 129, 0.1); color: $success; }
+.erpd_badge_amber { background: rgba(245, 158, 11, 0.1); color: $amber; }
+
+.erpd_chart_wrap {
+    position: relative;
+    height: 290px;
+    width: 100%;
+}
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+.erpd_footer {
+    text-align: center;
+    padding: 20px 36px 0;
+    color: $text-muted;
+    font-size: 12px;
+    border-top: 1px solid $border;
+    margin: 4px 36px 0;
+}

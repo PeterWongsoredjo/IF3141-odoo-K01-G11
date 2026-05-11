@@ -9,6 +9,11 @@
         'views/views.xml',
     ],
     'assets': {
+        'web.assets_backend': [
+            'simple_erp/static/src/dashboard/dashboard.xml',
+            'simple_erp/static/src/dashboard/dashboard.js',
+            'simple_erp/static/src/dashboard/dashboard.scss',
+        ],
         'hr_attendance.assets_public_attendance': [
             'simple_erp/static/src/public_kiosk_exit_button.js',
             'simple_erp/static/src/public_kiosk_exit_button.scss',

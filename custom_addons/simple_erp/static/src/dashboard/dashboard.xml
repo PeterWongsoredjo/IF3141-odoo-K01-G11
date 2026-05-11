@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="simple_erp.DashboardCustom">
+        <div class="erpd_root" t-ref="root">
+
+            <!-- ── Header ─────────────────────────────────────────────── -->
+            <header class="erpd_header">
+                <div class="erpd_header_brand">
+                    <div class="erpd_logo_mark">KE</div>
+                    <div class="erpd_brand_text">
+                        <h1 class="erpd_brand_name">Kopi Eyang</h1>
+                        <span class="erpd_brand_tagline">Executive Insights Dashboard</span>
+                    </div>
+                </div>
+                <div class="erpd_header_right">
+                    <span class="erpd_live_badge">&#9679; Live</span>
+                </div>
+            </header>
+
+            <!-- ── Date Filter Bar ────────────────────────────────────── -->
+            <div class="erpd_filter_bar">
+                <!-- Preset buttons -->
+                <div class="erpd_presets">
+                    <button class="erpd_preset_btn"
+                        t-att-class="{'erpd_preset_active': state.activePreset === 'month'}"
+                        t-on-click="() => this.applyPreset('month')">This Month</button>
+                    <button class="erpd_preset_btn"
+                        t-att-class="{'erpd_preset_active': state.activePreset === 'quarter'}"
+                        t-on-click="() => this.applyPreset('quarter')">Last 3 Months</button>
+                    <button class="erpd_preset_btn"
+                        t-att-class="{'erpd_preset_active': state.activePreset === 'year'}"
+                        t-on-click="() => this.applyPreset('year')">This Year</button>
+                    <button class="erpd_preset_btn"
+                        t-att-class="{'erpd_preset_active': state.activePreset === 'all'}"
+                        t-on-click="() => this.applyPreset('all')">All Time</button>
+                </div>
+
+                <!-- Custom range -->
+                <div class="erpd_custom_range">
+                    <span class="erpd_range_label">From</span>
+                    <input class="erpd_date_input" type="date" t-model="state.dateFrom"
+                        t-on-change="() => { this.state.activePreset = 'custom'; }" />
+                    <span class="erpd_range_label">To</span>
+                    <input class="erpd_date_input" type="date" t-model="state.dateTo"
+                        t-on-change="() => { this.state.activePreset = 'custom'; }" />
+                    <button class="erpd_apply_btn" t-on-click="applyFilter"
+                        t-att-disabled="state.filtering">
+                        <t t-if="state.filtering">Loading...</t>
+                        <t t-else="">Apply</t>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ── Loading state ──────────────────────────────────────── -->
+            <t t-if="!state.loaded">
+                <div class="erpd_loading">
+                    <div class="erpd_spinner"/>
+                    <p>Fetching metrics...</p>
+                </div>
+            </t>
+
+            <!-- ── Main content ───────────────────────────────────────── -->
+            <t t-if="state.loaded">
+
+                <!-- KPI Strip -->
+                <section class="erpd_kpi_strip">
+                    <div class="erpd_kpi_card erpd_kpi_income">
+                        <div class="erpd_kpi_icon_wrap">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+                            </svg>
+                        </div>
+                        <div class="erpd_kpi_info">
+                            <span class="erpd_kpi_label">Total Revenue</span>
+                            <span class="erpd_kpi_value" t-esc="fmt(state.data.kpis.total_income)"/>
+                        </div>
+                    </div>
+
+                    <div class="erpd_kpi_card erpd_kpi_expense">
+                        <div class="erpd_kpi_icon_wrap">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/>
+                            </svg>
+                        </div>
+                        <div class="erpd_kpi_info">
+                            <span class="erpd_kpi_label">Total Expenses</span>
+                            <span class="erpd_kpi_value" t-esc="fmt(state.data.kpis.total_expense)"/>
+                        </div>
+                    </div>
+
+                    <div class="erpd_kpi_card erpd_kpi_net">
+                        <div class="erpd_kpi_icon_wrap">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                            </svg>
+                        </div>
+                        <div class="erpd_kpi_info">
+                            <span class="erpd_kpi_label">Net Profit</span>
+                            <span class="erpd_kpi_value" t-esc="fmt(state.data.kpis.net_profit)"/>
+                        </div>
+                    </div>
+
+                    <div class="erpd_kpi_card erpd_kpi_stock">
+                        <div class="erpd_kpi_icon_wrap">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            </svg>
+                        </div>
+                        <div class="erpd_kpi_info">
+                            <span class="erpd_kpi_label">Total Stock In</span>
+                            <span class="erpd_kpi_value" t-esc="fmtNum(state.data.kpis.total_stock_in)"/>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Charts 2x2 Grid -->
+                <section class="erpd_charts_grid">
+
+                    <div class="erpd_chart_card">
+                        <div class="erpd_chart_card_header">
+                            <div>
+                                <h3 class="erpd_chart_title">Sales Overview</h3>
+                                <p class="erpd_chart_subtitle">Monthly income from all sales</p>
+                            </div>
+                            <span class="erpd_chart_badge erpd_badge_blue">Bar</span>
+                        </div>
+                        <div class="erpd_chart_wrap">
+                            <canvas t-ref="salesChart"/>
+                        </div>
+                    </div>
+
+                    <div class="erpd_chart_card">
+                        <div class="erpd_chart_card_header">
+                            <div>
+                                <h3 class="erpd_chart_title">Expense Overview</h3>
+                                <p class="erpd_chart_subtitle">Monthly vendor purchase expenses</p>
+                            </div>
+                            <span class="erpd_chart_badge erpd_badge_red">Bar</span>
+                        </div>
+                        <div class="erpd_chart_wrap">
+                            <canvas t-ref="expenseChart"/>
+                        </div>
+                    </div>
+
+                    <div class="erpd_chart_card">
+                        <div class="erpd_chart_card_header">
+                            <div>
+                                <h3 class="erpd_chart_title">Stock Movement</h3>
+                                <p class="erpd_chart_subtitle">Daily stock in vs. stock out</p>
+                            </div>
+                            <span class="erpd_chart_badge erpd_badge_green">Line</span>
+                        </div>
+                        <div class="erpd_chart_wrap">
+                            <canvas t-ref="stockChart"/>
+                        </div>
+                    </div>
+
+                    <div class="erpd_chart_card">
+                        <div class="erpd_chart_card_header">
+                            <div>
+                                <h3 class="erpd_chart_title">Financial Performance</h3>
+                                <p class="erpd_chart_subtitle">Income, Expense &amp; Net Profit by month</p>
+                            </div>
+                            <span class="erpd_chart_badge erpd_badge_amber">Multi-line</span>
+                        </div>
+                        <div class="erpd_chart_wrap">
+                            <canvas t-ref="financeChart"/>
+                        </div>
+                    </div>
+
+                </section>
+
+                <footer class="erpd_footer">
+                    Kopi Eyang ERP &#x2022; IF3141 Sistem Informasi &#x2022; Kelompok 11
+                </footer>
+
+            </t>
+        </div>
+    </t>
+</templates>

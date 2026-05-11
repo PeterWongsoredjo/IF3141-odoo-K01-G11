@@ -246,6 +246,131 @@ class DashboardMetrics(models.Model):
         """)
 
 
+    @api.model
+    def get_combined_dashboard_data(self, date_from=False, date_to=False):
+        cr = self.env.cr
+
+        def _where(date_field, base=None):
+            conds = list(base or [])
+            params = []
+            if date_from:
+                conds.append(f"{date_field} >= %s")
+                params.append(date_from)
+            if date_to:
+                conds.append(f"{date_field} <= %s")
+                params.append(date_to)
+            clause = ("WHERE " + " AND ".join(conds)) if conds else ""
+            return clause, params
+
+        sw, sp = _where("date")
+        iw, ip = _where("request_date", ["status = 'moved'"])
+        kw, kp = _where("changed_at::date")
+
+        cr.execute(f"""
+            SELECT
+                TO_CHAR(DATE_TRUNC('month', date), 'Mon YYYY') AS label,
+                DATE_TRUNC('month', date) AS month,
+                COALESCE(SUM(income_amount), 0) AS total
+            FROM simple_erp_sales_record {sw}
+            GROUP BY DATE_TRUNC('month', date)
+            ORDER BY DATE_TRUNC('month', date)
+        """, sp)
+        sales_rows = cr.dictfetchall()
+
+        cr.execute(f"""
+            SELECT
+                TO_CHAR(DATE_TRUNC('month', request_date), 'Mon YYYY') AS label,
+                DATE_TRUNC('month', request_date) AS month,
+                COALESCE(SUM(amount_total), 0) AS total
+            FROM simple_erp_invoice_record {iw}
+            GROUP BY DATE_TRUNC('month', request_date)
+            ORDER BY DATE_TRUNC('month', request_date)
+        """, ip)
+        expense_rows = cr.dictfetchall()
+
+        cr.execute(f"""
+            SELECT
+                TO_CHAR(changed_at::date, 'DD Mon') AS label,
+                changed_at::date AS day,
+                COALESCE(SUM(stock_in_amount), 0) AS stock_in,
+                COALESCE(SUM(stock_out_amount), 0) AS stock_out
+            FROM simple_erp_stock_change_log {kw}
+            GROUP BY changed_at::date
+            ORDER BY changed_at::date
+        """, kp)
+        stock_rows = cr.dictfetchall()
+
+        # CTE: each sub-query uses sw/iw so params repeat in order
+        cr.execute(f"""
+            WITH months AS (
+                SELECT DATE_TRUNC('month', date) AS month
+                FROM simple_erp_sales_record {sw}
+                UNION
+                SELECT DATE_TRUNC('month', request_date)
+                FROM simple_erp_invoice_record {iw}
+            ),
+            sales AS (
+                SELECT DATE_TRUNC('month', date) AS month, COALESCE(SUM(income_amount), 0) AS income
+                FROM simple_erp_sales_record {sw} GROUP BY 1
+            ),
+            expenses AS (
+                SELECT DATE_TRUNC('month', request_date) AS month, COALESCE(SUM(amount_total), 0) AS expense
+                FROM simple_erp_invoice_record {iw} GROUP BY 1
+            )
+            SELECT
+                TO_CHAR(m.month, 'Mon YYYY') AS label,
+                COALESCE(s.income, 0) AS income,
+                COALESCE(e.expense, 0) AS expense,
+                COALESCE(s.income, 0) - COALESCE(e.expense, 0) AS net
+            FROM months m
+            LEFT JOIN sales s ON s.month = m.month
+            LEFT JOIN expenses e ON e.month = m.month
+            ORDER BY m.month
+        """, sp + ip + sp + ip)
+        finance_rows = cr.dictfetchall()
+
+        cr.execute(f"SELECT COALESCE(SUM(income_amount), 0) FROM simple_erp_sales_record {sw}", sp)
+        total_income = cr.fetchone()[0]
+
+        cr.execute(f"SELECT COALESCE(SUM(amount_total), 0) FROM simple_erp_invoice_record {iw}", ip)
+        total_expense = cr.fetchone()[0]
+
+        cr.execute(f"""
+            SELECT COALESCE(SUM(stock_in_amount), 0), COALESCE(SUM(stock_out_amount), 0)
+            FROM simple_erp_stock_change_log {kw}
+        """, kp)
+        stock_totals = cr.fetchone()
+
+        return {
+            'sales': {
+                'labels': [r['label'] for r in sales_rows],
+                'data': [float(r['total']) for r in sales_rows],
+            },
+            'expense': {
+                'labels': [r['label'] for r in expense_rows],
+                'data': [float(r['total']) for r in expense_rows],
+            },
+            'stock': {
+                'labels': [r['label'] for r in stock_rows],
+                'stock_in': [float(r['stock_in']) for r in stock_rows],
+                'stock_out': [float(r['stock_out']) for r in stock_rows],
+            },
+            'finance': {
+                'labels': [r['label'] for r in finance_rows],
+                'income': [float(r['income']) for r in finance_rows],
+                'expense': [float(r['expense']) for r in finance_rows],
+                'net': [float(r['net']) for r in finance_rows],
+            },
+            'kpis': {
+                'total_income': float(total_income),
+                'total_expense': float(total_expense),
+                'net_profit': float(total_income - total_expense),
+                'total_stock_in': float(stock_totals[0]),
+                'total_stock_out': float(stock_totals[1]),
+            },
+        }
+
+
 class DashboardFinanceLine(models.Model):
     _name = 'simple_erp.dashboard_finance_line'
     _description = 'ERP Finance Dashboard Line Series'
