@@ -5,6 +5,7 @@
     'summary': 'Manage Raw Products, Import CSV Sales, Upload Invoice Images, and Dashboard Reporting.',
     'depends': ['base', 'hr', 'hr_attendance'],
     'data': [
+        'security/simple_erp_groups.xml',
         'security/ir.model.access.csv',
         'views/views.xml',
     ],

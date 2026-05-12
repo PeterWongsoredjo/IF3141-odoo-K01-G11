@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="module_category_simple_erp" model="ir.module.category">
+            <field name="name">Simple ERP</field>
+            <field name="description">Roles for the Simple ERP module (Cafe Operations).</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <!-- ============================================================ -->
+        <!-- Role 1: Cashier                                              -->
+        <!-- Can use Sales CSV Reader + view Products (read-only)         -->
+        <!-- ============================================================ -->
+        <record id="group_simple_erp_cashier" model="res.groups">
+            <field name="name">Cashier</field>
+            <field name="category_id" ref="module_category_simple_erp"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="comment">Operates the POS / Sales CSV import. Read-only on Products.</field>
+        </record>
+
+        <!-- ============================================================ -->
+        <!-- Role 2: Barista                                              -->
+        <!-- View + update Raw Product stocks                             -->
+        <!-- ============================================================ -->
+        <record id="group_simple_erp_barista" model="res.groups">
+            <field name="name">Barista</field>
+            <field name="category_id" ref="module_category_simple_erp"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="comment">Manages raw material (ingredient) stock levels.</field>
+        </record>
+
+        <!-- ============================================================ -->
+        <!-- Role 3: Kitchen                                              -->
+        <!-- Raw Product stocks + Invoice Upload                          -->
+        <!-- Inherits Barista (so Kitchen automatically gets raw stock)   -->
+        <!-- ============================================================ -->
+        <record id="group_simple_erp_kitchen" model="res.groups">
+            <field name="name">Kitchen</field>
+            <field name="category_id" ref="module_category_simple_erp"/>
+            <field name="implied_ids" eval="[(4, ref('group_simple_erp_barista'))]"/>
+            <field name="comment">Kitchen staff: manages raw stock and uploads vendor invoices.</field>
+        </record>
+
+        <!-- ============================================================ -->
+        <!-- Role 4: Founder                                              -->
+        <!-- Full power role (treated as the "real" admin for the app).   -->
+        <!-- Inherits all line-staff roles + Odoo system admin + HR mgr.  -->
+        <!-- ============================================================ -->
+        <record id="group_simple_erp_founder" model="res.groups">
+            <field name="name">Founder</field>
+            <field name="category_id" ref="module_category_simple_erp"/>
+            <field name="implied_ids" eval="[
+                (4, ref('group_simple_erp_cashier')),
+                (4, ref('group_simple_erp_barista')),
+                (4, ref('group_simple_erp_kitchen')),
+                (4, ref('base.group_system')),
+                (4, ref('hr.group_hr_manager')),
+            ]"/>
+            <field name="comment">Owner / Manager. Full system access (the de-facto admin).</field>
+        </record>
+
+        <!-- ============================================================ -->
+        <!-- Role 5: Admin                                                -->
+        <!-- Full system access (inherits all roles + Odoo system admin)  -->
+        <!-- ============================================================ -->
+        <record id="group_simple_erp_admin" model="res.groups">
+            <field name="name">Admin</field>
+            <field name="category_id" ref="module_category_simple_erp"/>
+            <field name="implied_ids" eval="[
+                (4, ref('group_simple_erp_founder')),
+                (4, ref('group_simple_erp_kitchen')),
+                (4, ref('base.group_system')),
+            ]"/>
+            <field name="comment">Full administrative access to all Simple ERP data.</field>
+        </record>
+
+    </data>
+</odoo>

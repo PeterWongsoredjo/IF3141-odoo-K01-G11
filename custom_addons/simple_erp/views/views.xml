@@ -367,20 +367,33 @@ action = {
   </record>
 
   <!-- Custom Executive Dashboard Client Action -->
+  <!-- Access is gated at the menu level (menu_erp_custom_dashboard has
+       groups=...); ir.actions.client has no groups_id field in Odoo 17. -->
   <record id="action_custom_dashboard" model="ir.actions.client">
     <field name="name">Executive Dashboard</field>
     <field name="tag">simple_erp.dashboard_custom</field>
   </record>
 
   <!-- Main Menus -->
-  <!-- Dashboard opens directly when user enters Business ERP -->
-  <menuitem id="menu_erp_root" name="Business ERP" sequence="10"
-    action="action_custom_dashboard" />
+  <!-- Root menu has NO default action so non-Founder roles aren't bounced
+       into the dashboard (which they can't read). Founder/Admin get a
+       dedicated, group-restricted Dashboard menu item below. -->
+  <menuitem id="menu_erp_root" name="Business ERP" sequence="10" />
+
+  <!-- IMPORTANT: removing the `action` attribute from <menuitem> does NOT
+       clear the previously-stored action on upgrade. Explicitly null it. -->
+  <record id="menu_erp_root" model="ir.ui.menu">
+    <field name="action" eval="False"/>
+  </record>
 
   <!-- Deactivate the old Dashboard sub-menu and its children -->
   <record id="menu_erp_dashboard" model="ir.ui.menu">
     <field name="active" eval="False"/>
   </record>
+
+  <menuitem id="menu_erp_custom_dashboard" name="Dashboard" parent="menu_erp_root"
+    action="action_custom_dashboard" sequence="1"
+    groups="simple_erp.group_simple_erp_founder" />
 
   <menuitem id="menu_erp_raw_products" name="Stock" parent="menu_erp_root"
     action="action_raw_product" sequence="2" />
@@ -394,8 +407,12 @@ action = {
     action="action_erp_employees" sequence="6" />
   <menuitem id="menu_erp_attendance" name="Attendance" parent="menu_erp_root"
     action="action_erp_attendance" sequence="7" />
+  <!-- Kiosk mode writes a kiosk_key to res.company, which non-managers
+       cannot do. Restrict the menu to Founder/Admin to avoid the
+       "not allowed to modify Companies" error for line-staff. -->
   <menuitem id="menu_erp_attendance_kiosk" name="Attendance Kiosk" parent="menu_erp_attendance"
-    action="action_erp_attendance_kiosk" sequence="1" />
+    action="action_erp_attendance_kiosk" sequence="1"
+    groups="simple_erp.group_simple_erp_founder" />
   <menuitem id="menu_erp_attendance_back" name="Back to Attendance" parent="menu_erp_attendance"
     action="action_erp_attendance" sequence="2" />
 
