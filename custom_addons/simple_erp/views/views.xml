@@ -353,15 +353,23 @@
     <field name="view_mode">tree,form,graph,pivot</field>
   </record>
 
+  <!-- Build the kiosk URL ourselves (with sudo) so line-staff can use the
+       kiosk without needing write access to res.company. The standard
+       /hr_attendance/kiosk_mode_menu/<id> controller requires manager
+       rights; the final /hr_attendance/<id>/<key> page is public. -->
+  <!-- model_id is the model Odoo checks for write-access BEFORE running
+       the code. Using res.company blocks every non-admin user. Point it
+       at simple_erp.invoice_record (RWC for all 5 roles) so the access
+       check passes; the code below still uses env.company freely. -->
   <record id="action_erp_attendance_kiosk" model="ir.actions.server">
     <field name="name">Attendance Kiosk</field>
-    <field name="model_id" ref="base.model_res_company"/>
+    <field name="model_id" ref="model_simple_erp_invoice_record"/>
     <field name="state">code</field>
     <field name="code">
 action = {
     'type': 'ir.actions.act_url',
     'target': 'self',
-    'url': f'/hr_attendance/kiosk_mode_menu/{env.company.id}',
+    'url': env.company.simple_erp_get_kiosk_url(),
 }
     </field>
   </record>
@@ -405,15 +413,19 @@ action = {
     action="action_invoice_record" sequence="5" />
   <menuitem id="menu_erp_employees" name="Employees" parent="menu_erp_root"
     action="action_erp_employees" sequence="6" />
+  <!-- Parent Attendance menu opens the Kiosk for ALL roles. Founder/Admin
+       additionally get the "Back to Attendance" child to reach the list. -->
   <menuitem id="menu_erp_attendance" name="Attendance" parent="menu_erp_root"
-    action="action_erp_attendance" sequence="7" />
-  <!-- Kiosk mode writes a kiosk_key to res.company, which non-managers
-       cannot do. Restrict the menu to Founder/Admin to avoid the
-       "not allowed to modify Companies" error for line-staff. -->
+    action="action_erp_attendance_kiosk" sequence="7" />
+  <!-- Old standalone Kiosk submenu is now redundant — the parent
+       Attendance menu opens the kiosk directly. Deactivate it. -->
   <menuitem id="menu_erp_attendance_kiosk" name="Attendance Kiosk" parent="menu_erp_attendance"
-    action="action_erp_attendance_kiosk" sequence="1"
-    groups="simple_erp.group_simple_erp_founder" />
+    action="action_erp_attendance_kiosk" sequence="1" />
+  <record id="menu_erp_attendance_kiosk" model="ir.ui.menu">
+    <field name="active" eval="False"/>
+  </record>
   <menuitem id="menu_erp_attendance_back" name="Back to Attendance" parent="menu_erp_attendance"
-    action="action_erp_attendance" sequence="2" />
+    action="action_erp_attendance" sequence="2"
+    groups="simple_erp.group_simple_erp_founder" />
 
 </odoo>

@@ -1,4 +1,17 @@
+import uuid
+
 from odoo import models, fields, api, tools
+
+
+class ResCompanyKioskHelper(models.Model):
+    _inherit = 'res.company'
+
+    def simple_erp_get_kiosk_url(self):
+        self.ensure_one()
+        company = self.sudo()
+        if not company.attendance_kiosk_key:
+            company.attendance_kiosk_key = uuid.uuid4().hex
+        return f'/hr_attendance/{company.attendance_kiosk_key}'
 
 
 class StockChangeLog(models.Model):
