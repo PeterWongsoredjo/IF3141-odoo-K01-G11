@@ -111,6 +111,14 @@
       <form string="Buy Request Entry">
         <sheet>
           <field name="receipt_image" widget="image" class="oe_avatar" />
+          <div class="oe_button_box" invisible="not receipt_image">
+            <button name="action_preview_receipt_image" type="object"
+                    string="Preview Image" class="btn-primary"
+                    icon="fa-search-plus"/>
+            <button name="action_download_receipt_image" type="object"
+                    string="Download" class="btn-secondary"
+                    icon="fa-download"/>
+          </div>
           <group>
             <group>
               <field name="user_id" />

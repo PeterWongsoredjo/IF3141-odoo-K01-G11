@@ -165,6 +165,22 @@ class InvoiceRecord(models.Model):
     note = fields.Text(string='Note')
     receipt_image = fields.Binary(string='Invoice Image', attachment=True)
 
+    def action_preview_receipt_image(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f'/web/image/simple_erp.invoice_record/{self.id}/receipt_image',
+            'target': 'new',
+        }
+
+    def action_download_receipt_image(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f'/web/content/simple_erp.invoice_record/{self.id}/receipt_image?download=true',
+            'target': 'self',
+        }
+
     @api.depends('qty', 'unit_price')
     def _compute_amount_total(self):
         for rec in self:
@@ -174,8 +190,7 @@ class InvoiceRecord(models.Model):
     def create(self, vals_list):
         records = super(InvoiceRecord, self).create(vals_list)
         for rec in records:
-            if rec.stock_item_id and rec.status == 'done':
-                # Add back to stock when purchased/invoiced
+            if rec.stock_item_id and rec.status == 'moved':
                 new_stock = rec.stock_item_id.current_qty + rec.qty
                 rec.stock_item_id.with_context(skip_stock_log=True).write({'current_qty': new_stock})
                 self.env['simple_erp.stock_change_log'].sudo().create({
@@ -191,7 +206,7 @@ class InvoiceRecord(models.Model):
 
     def write(self, vals):
         result = super(InvoiceRecord, self).write(vals)
-        if 'status' in vals and vals['status'] == 'done':
+        if 'status' in vals and vals['status'] == 'moved':
             for rec in self:
                 if rec.stock_item_id:
                     new_stock = rec.stock_item_id.current_qty + rec.qty
@@ -248,10 +263,10 @@ class DashboardMetrics(models.Model):
                         ir.request_date::date AS date,
                         0::float AS income_amount,
                         SUM(ir.amount_total) AS expense_amount,
-                        SUM(ir.qty) AS stock_in_amount,
+                        SUM(CASE WHEN ir.status = 'moved' THEN ir.qty ELSE 0 END) AS stock_in_amount,
                         0::float AS stock_out_amount
                     FROM simple_erp_invoice_record ir
-                    WHERE ir.status = 'done'
+                    WHERE ir.status IN ('bought', 'moved')
                     GROUP BY ir.request_date
                 ) t
                 GROUP BY t.date
@@ -276,7 +291,7 @@ class DashboardMetrics(models.Model):
             return clause, params
 
         sw, sp = _where("date")
-        iw, ip = _where("request_date", ["status = 'moved'"])
+        iw, ip = _where("request_date", ["status IN ('bought', 'moved')"])
 
         stock_base = []
         if stock_filter and isinstance(stock_filter, str) and ':' in stock_filter:
@@ -438,7 +453,7 @@ class DashboardFinanceLine(models.Model):
                             0::float AS income_amount,
                             SUM(ir.amount_total) AS expense_amount
                         FROM simple_erp_invoice_record ir
-                        WHERE ir.status = 'done'
+                        WHERE ir.status IN ('bought', 'moved')
                         GROUP BY ir.request_date
                     ) t
                     GROUP BY t.date
