@@ -51,6 +51,7 @@ export class DashboardCustom extends Component {
             dateFrom: "",
             dateTo: "",
             activePreset: "all",
+            stockFilter: "all",
         });
 
         this.rootRef    = useRef("root");
@@ -158,12 +159,23 @@ export class DashboardCustom extends Component {
             {
                 date_from: this.state.dateFrom || false,
                 date_to: this.state.dateTo || false,
+                stock_filter: this.state.stockFilter !== "all" ? this.state.stockFilter : false,
             }
         );
+        // Preserve item list so the dropdown stays populated when filtering
+        // returns no rows for the selected stock.
+        if (this.state.data && this.state.data.stock_items && (!data.stock_items || !data.stock_items.length)) {
+            data.stock_items = this.state.data.stock_items;
+        }
         this.state.data = data;
         this.state.filtering = false;
         // Signal onPatched to re-render charts after OWL patches the DOM
         this._needsChartRender = true;
+    }
+
+    onStockFilterChange(ev) {
+        this.state.stockFilter = ev.target.value;
+        this.applyFilter();
     }
 
     // ── Chart rendering ───────────────────────────────────────────────────────

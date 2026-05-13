@@ -360,6 +360,37 @@ $shadow-lg:  0 12px 40px rgba(0, 43, 80, 0.13);
     flex-shrink: 0;
 }
 
+.erpd_chart_header_right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.erpd_stock_select {
+    border: 1px solid $border;
+    border-radius: 8px;
+    padding: 5px 28px 5px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    color: $text;
+    background: #fff
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%23002b50' d='M0 0l5 6 5-6z'/></svg>")
+        no-repeat right 8px center;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    outline: none;
+    font-family: inherit;
+    max-width: 200px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+
+    &:hover:not([disabled]) { border-color: $blue-mid; }
+    &:focus                 { border-color: $blue-mid; box-shadow: 0 0 0 3px rgba(30, 111, 189, 0.12); }
+    &[disabled]             { opacity: 0.6; cursor: not-allowed; }
+}
+
 .erpd_badge_blue  { background: $blue-light;              color: $blue-mid; }
 .erpd_badge_red   { background: rgba(239, 68, 68, 0.1);  color: $danger; }
 .erpd_badge_green { background: rgba(16, 185, 129, 0.1); color: $success; }

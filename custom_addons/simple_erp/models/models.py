@@ -260,7 +260,7 @@ class DashboardMetrics(models.Model):
 
 
     @api.model
-    def get_combined_dashboard_data(self, date_from=False, date_to=False):
+    def get_combined_dashboard_data(self, date_from=False, date_to=False, stock_filter=False):
         cr = self.env.cr
 
         def _where(date_field, base=None):
@@ -277,7 +277,16 @@ class DashboardMetrics(models.Model):
 
         sw, sp = _where("date")
         iw, ip = _where("request_date", ["status = 'moved'"])
-        kw, kp = _where("changed_at::date")
+
+        stock_base = []
+        if stock_filter and isinstance(stock_filter, str) and ':' in stock_filter:
+            kind, sid = stock_filter.split(':', 1)
+            if sid.isdigit():
+                if kind == 'raw':
+                    stock_base.append(f"raw_product_id = {int(sid)}")
+                elif kind == 'product':
+                    stock_base.append(f"product_id = {int(sid)}")
+        kw, kp = _where("changed_at::date", stock_base)
 
         cr.execute(f"""
             SELECT
@@ -354,6 +363,13 @@ class DashboardMetrics(models.Model):
         """, kp)
         stock_totals = cr.fetchone()
 
+        raw_items = self.env['simple_erp.raw_product'].sudo().search_read(
+            [], ['id', 'name'], order='name asc'
+        )
+        stock_items = [
+            {'value': f"raw:{r['id']}", 'label': r['name']} for r in raw_items
+        ]
+
         return {
             'sales': {
                 'labels': [r['label'] for r in sales_rows],
@@ -381,6 +397,7 @@ class DashboardMetrics(models.Model):
                 'total_stock_in': float(stock_totals[0]),
                 'total_stock_out': float(stock_totals[1]),
             },
+            'stock_items': stock_items,
         }
 
 
