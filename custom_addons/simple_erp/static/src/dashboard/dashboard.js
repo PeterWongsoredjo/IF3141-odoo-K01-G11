@@ -52,6 +52,9 @@ export class DashboardCustom extends Component {
             dateTo: "",
             activePreset: "all",
             stockFilter: "all",
+            salesPeriod: "month",
+            expensePeriod: "month",
+            financePeriod: "month",
         });
 
         this.rootRef    = useRef("root");
@@ -160,6 +163,9 @@ export class DashboardCustom extends Component {
                 date_from: this.state.dateFrom || false,
                 date_to: this.state.dateTo || false,
                 stock_filter: this.state.stockFilter !== "all" ? this.state.stockFilter : false,
+                sales_period: this.state.salesPeriod,
+                expense_period: this.state.expensePeriod,
+                finance_period: this.state.financePeriod,
             }
         );
         // Preserve item list so the dropdown stays populated when filtering
@@ -175,6 +181,12 @@ export class DashboardCustom extends Component {
 
     onStockFilterChange(ev) {
         this.state.stockFilter = ev.target.value;
+        this.applyFilter();
+    }
+
+    onPeriodChange(chart, ev) {
+        const key = chart + "Period";
+        this.state[key] = ev.target.value;
         this.applyFilter();
     }
 
@@ -194,13 +206,15 @@ export class DashboardCustom extends Component {
             if (ref.el) this._charts.push(new Chart(ref.el, config));
         };
 
+        const PERIOD_LABEL = { day: "Daily", week: "Weekly", month: "Monthly", year: "Yearly" };
+
         // ── Chart 1: Sales Overview (Bar) ─────────────────────────────────
         make(this.salesRef, {
             type: "bar",
             data: {
                 labels: d.sales.labels,
                 datasets: [{
-                    label: "Monthly Income (Rp)",
+                    label: `${PERIOD_LABEL[this.state.salesPeriod]} Income (Rp)`,
                     data: d.sales.data,
                     backgroundColor: PALETTE.blueAlpha,
                     borderColor: PALETTE.blue,
@@ -223,7 +237,7 @@ export class DashboardCustom extends Component {
             data: {
                 labels: d.expense.labels,
                 datasets: [{
-                    label: "Monthly Expenses (Rp)",
+                    label: `${PERIOD_LABEL[this.state.expensePeriod]} Expenses (Rp)`,
                     data: d.expense.data,
                     backgroundColor: "rgba(239, 68, 68, 0.72)",
                     borderColor: PALETTE.danger,

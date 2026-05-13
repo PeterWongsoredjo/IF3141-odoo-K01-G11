@@ -120,9 +120,19 @@
                         <div class="erpd_chart_card_header">
                             <div>
                                 <h3 class="erpd_chart_title">Sales Overview</h3>
-                                <p class="erpd_chart_subtitle">Monthly income from all sales</p>
+                                <p class="erpd_chart_subtitle">Income from all sales</p>
                             </div>
-                            <span class="erpd_chart_badge erpd_badge_blue">Bar</span>
+                            <div class="erpd_chart_header_right">
+                                <select class="erpd_period_select"
+                                    t-on-change="(ev) => this.onPeriodChange('sales', ev)"
+                                    t-att-disabled="state.filtering">
+                                    <option value="day"   t-att-selected="state.salesPeriod === 'day'">Daily</option>
+                                    <option value="week"  t-att-selected="state.salesPeriod === 'week'">Weekly</option>
+                                    <option value="month" t-att-selected="state.salesPeriod === 'month'">Monthly</option>
+                                    <option value="year"  t-att-selected="state.salesPeriod === 'year'">Yearly</option>
+                                </select>
+                                <span class="erpd_chart_badge erpd_badge_blue">Bar</span>
+                            </div>
                         </div>
                         <div class="erpd_chart_wrap">
                             <canvas t-ref="salesChart"/>
@@ -133,9 +143,19 @@
                         <div class="erpd_chart_card_header">
                             <div>
                                 <h3 class="erpd_chart_title">Expense Overview</h3>
-                                <p class="erpd_chart_subtitle">Monthly vendor purchase expenses</p>
+                                <p class="erpd_chart_subtitle">Vendor purchase expenses</p>
                             </div>
-                            <span class="erpd_chart_badge erpd_badge_red">Bar</span>
+                            <div class="erpd_chart_header_right">
+                                <select class="erpd_period_select"
+                                    t-on-change="(ev) => this.onPeriodChange('expense', ev)"
+                                    t-att-disabled="state.filtering">
+                                    <option value="day"   t-att-selected="state.expensePeriod === 'day'">Daily</option>
+                                    <option value="week"  t-att-selected="state.expensePeriod === 'week'">Weekly</option>
+                                    <option value="month" t-att-selected="state.expensePeriod === 'month'">Monthly</option>
+                                    <option value="year"  t-att-selected="state.expensePeriod === 'year'">Yearly</option>
+                                </select>
+                                <span class="erpd_chart_badge erpd_badge_red">Bar</span>
+                            </div>
                         </div>
                         <div class="erpd_chart_wrap">
                             <canvas t-ref="expenseChart"/>
@@ -171,9 +191,19 @@
                         <div class="erpd_chart_card_header">
                             <div>
                                 <h3 class="erpd_chart_title">Financial Performance</h3>
-                                <p class="erpd_chart_subtitle">Income, Expense &amp; Net Profit by month</p>
+                                <p class="erpd_chart_subtitle">Income, Expense &amp; Net Profit</p>
                             </div>
-                            <span class="erpd_chart_badge erpd_badge_amber">Multi-line</span>
+                            <div class="erpd_chart_header_right">
+                                <select class="erpd_period_select"
+                                    t-on-change="(ev) => this.onPeriodChange('finance', ev)"
+                                    t-att-disabled="state.filtering">
+                                    <option value="day"   t-att-selected="state.financePeriod === 'day'">Daily</option>
+                                    <option value="week"  t-att-selected="state.financePeriod === 'week'">Weekly</option>
+                                    <option value="month" t-att-selected="state.financePeriod === 'month'">Monthly</option>
+                                    <option value="year"  t-att-selected="state.financePeriod === 'year'">Yearly</option>
+                                </select>
+                                <span class="erpd_chart_badge erpd_badge_amber">Multi-line</span>
+                            </div>
                         </div>
                         <div class="erpd_chart_wrap">
                             <canvas t-ref="financeChart"/>

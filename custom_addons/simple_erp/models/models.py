@@ -275,8 +275,23 @@ class DashboardMetrics(models.Model):
 
 
     @api.model
-    def get_combined_dashboard_data(self, date_from=False, date_to=False, stock_filter=False):
+    def get_combined_dashboard_data(self, date_from=False, date_to=False, stock_filter=False,
+                                    sales_period='month', expense_period='month', finance_period='month'):
         cr = self.env.cr
+
+        # period → (DATE_TRUNC grain, TO_CHAR format)
+        _GRAIN = {
+            'day':   ('day',   'DD Mon YYYY'),
+            'week':  ('week',  '"W"IW YYYY'),
+            'month': ('month', 'Mon YYYY'),
+            'year':  ('year',  'YYYY'),
+        }
+        def _grain(p):
+            return _GRAIN.get(p, _GRAIN['month'])
+
+        sales_grain, sales_fmt = _grain(sales_period)
+        exp_grain, exp_fmt = _grain(expense_period)
+        fin_grain, fin_fmt = _grain(finance_period)
 
         def _where(date_field, base=None):
             conds = list(base or [])
@@ -305,23 +320,23 @@ class DashboardMetrics(models.Model):
 
         cr.execute(f"""
             SELECT
-                TO_CHAR(DATE_TRUNC('month', date), 'Mon YYYY') AS label,
-                DATE_TRUNC('month', date) AS month,
+                TO_CHAR(DATE_TRUNC('{sales_grain}', date), '{sales_fmt}') AS label,
+                DATE_TRUNC('{sales_grain}', date) AS bucket,
                 COALESCE(SUM(income_amount), 0) AS total
             FROM simple_erp_sales_record {sw}
-            GROUP BY DATE_TRUNC('month', date)
-            ORDER BY DATE_TRUNC('month', date)
+            GROUP BY DATE_TRUNC('{sales_grain}', date)
+            ORDER BY DATE_TRUNC('{sales_grain}', date)
         """, sp)
         sales_rows = cr.dictfetchall()
 
         cr.execute(f"""
             SELECT
-                TO_CHAR(DATE_TRUNC('month', request_date), 'Mon YYYY') AS label,
-                DATE_TRUNC('month', request_date) AS month,
+                TO_CHAR(DATE_TRUNC('{exp_grain}', request_date), '{exp_fmt}') AS label,
+                DATE_TRUNC('{exp_grain}', request_date) AS bucket,
                 COALESCE(SUM(amount_total), 0) AS total
             FROM simple_erp_invoice_record {iw}
-            GROUP BY DATE_TRUNC('month', request_date)
-            ORDER BY DATE_TRUNC('month', request_date)
+            GROUP BY DATE_TRUNC('{exp_grain}', request_date)
+            ORDER BY DATE_TRUNC('{exp_grain}', request_date)
         """, ip)
         expense_rows = cr.dictfetchall()
 
@@ -339,30 +354,30 @@ class DashboardMetrics(models.Model):
 
         # CTE: each sub-query uses sw/iw so params repeat in order
         cr.execute(f"""
-            WITH months AS (
-                SELECT DATE_TRUNC('month', date) AS month
+            WITH buckets AS (
+                SELECT DATE_TRUNC('{fin_grain}', date) AS bucket
                 FROM simple_erp_sales_record {sw}
                 UNION
-                SELECT DATE_TRUNC('month', request_date)
+                SELECT DATE_TRUNC('{fin_grain}', request_date)
                 FROM simple_erp_invoice_record {iw}
             ),
             sales AS (
-                SELECT DATE_TRUNC('month', date) AS month, COALESCE(SUM(income_amount), 0) AS income
+                SELECT DATE_TRUNC('{fin_grain}', date) AS bucket, COALESCE(SUM(income_amount), 0) AS income
                 FROM simple_erp_sales_record {sw} GROUP BY 1
             ),
             expenses AS (
-                SELECT DATE_TRUNC('month', request_date) AS month, COALESCE(SUM(amount_total), 0) AS expense
+                SELECT DATE_TRUNC('{fin_grain}', request_date) AS bucket, COALESCE(SUM(amount_total), 0) AS expense
                 FROM simple_erp_invoice_record {iw} GROUP BY 1
             )
             SELECT
-                TO_CHAR(m.month, 'Mon YYYY') AS label,
+                TO_CHAR(m.bucket, '{fin_fmt}') AS label,
                 COALESCE(s.income, 0) AS income,
                 COALESCE(e.expense, 0) AS expense,
                 COALESCE(s.income, 0) - COALESCE(e.expense, 0) AS net
-            FROM months m
-            LEFT JOIN sales s ON s.month = m.month
-            LEFT JOIN expenses e ON e.month = m.month
-            ORDER BY m.month
+            FROM buckets m
+            LEFT JOIN sales s ON s.bucket = m.bucket
+            LEFT JOIN expenses e ON e.bucket = m.bucket
+            ORDER BY m.bucket
         """, sp + ip + sp + ip)
         finance_rows = cr.dictfetchall()
 
