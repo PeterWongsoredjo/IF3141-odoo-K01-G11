@@ -28,9 +28,23 @@
             <field name="item_type"/>
             <field name="unit_of_measurement"/>
             <field name="current_qty"/>
+            <field name="adjustment_note" placeholder="Wajib diisi saat mengubah Current Quantity..."/>
             <field name="min_qty"/>
             <field name="is_low_stock" invisible="1"/>
           </group>
+          <notebook>
+            <page string="Riwayat Perubahan Stok" name="history">
+              <field name="stock_change_log_ids" readonly="1">
+                <tree create="false" edit="false" delete="false">
+                  <field name="changed_at"/>
+                  <field name="stock_in_amount"/>
+                  <field name="stock_out_amount"/>
+                  <field name="resulting_stock"/>
+                  <field name="note"/>
+                </tree>
+              </field>
+            </page>
+          </notebook>
         </sheet>
       </form>
     </field>
@@ -226,6 +240,7 @@
         <field name="stock_in_amount" sum="Stock In" />
         <field name="stock_out_amount" sum="Stock Out" />
         <field name="resulting_stock" />
+        <field name="note" />
       </tree>
     </field>
   </record>

@@ -1,6 +1,7 @@
 import uuid
 
-from odoo import models, fields, api, tools
+from odoo import models, fields, api, tools, _
+from odoo.exceptions import ValidationError
 
 
 class ResCompanyKioskHelper(models.Model):
@@ -33,6 +34,7 @@ class StockChangeLog(models.Model):
     stock_in_amount = fields.Float(string='Stock In', readonly=True)
     stock_out_amount = fields.Float(string='Stock Out', readonly=True)
     resulting_stock = fields.Float(string='Resulting Stock', readonly=True)
+    note = fields.Text(string='Note', readonly=True)
 
 
 class RawProduct(models.Model):
@@ -45,6 +47,16 @@ class RawProduct(models.Model):
     current_qty = fields.Float(string='Current Quantity', default=0.0)
     min_qty = fields.Float(string='Minimum Quantity', default=0.0)
     is_low_stock = fields.Boolean(string='Low Stock', compute='_compute_is_low_stock', store=True)
+    adjustment_note = fields.Char(
+        string='Catatan Perubahan',
+        help='Wajib diisi setiap kali Current Quantity diubah. Disimpan ke riwayat stok dan dikosongkan setelah save.',
+    )
+    stock_change_log_ids = fields.One2many(
+        'simple_erp.stock_change_log',
+        'raw_product_id',
+        string='Riwayat Perubahan Stok',
+        readonly=True,
+    )
 
     @api.depends('current_qty', 'min_qty')
     def _compute_is_low_stock(self):
@@ -54,6 +66,12 @@ class RawProduct(models.Model):
     def write(self, vals):
         if self.env.context.get('skip_stock_log') or 'current_qty' not in vals:
             return super(RawProduct, self).write(vals)
+
+        note = vals.pop('adjustment_note', None)
+        if note is None:
+            note = self[:1].adjustment_note
+        if not note or not str(note).strip():
+            raise ValidationError(_('Catatan wajib diisi saat mengubah Current Quantity.'))
 
         old_stock = {rec.id: rec.current_qty for rec in self}
         result = super(RawProduct, self).write(vals)
@@ -73,11 +91,13 @@ class RawProduct(models.Model):
                 'stock_in_amount': delta if delta > 0 else 0.0,
                 'stock_out_amount': -delta if delta < 0 else 0.0,
                 'resulting_stock': rec.current_qty,
+                'note': note,
             })
 
         if log_vals:
             self.env['simple_erp.stock_change_log'].sudo().create(log_vals)
 
+        super(RawProduct, self).write({'adjustment_note': False})
         return result
 
 class Product(models.Model):
