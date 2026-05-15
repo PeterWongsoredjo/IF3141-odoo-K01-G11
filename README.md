@@ -53,7 +53,7 @@ docker compose up -d
 
 > *Expected result:* container `odoo` dan `db` berjalan, log menunjukkan Odoo siap menerima koneksi di port `8069`.
 
-![Docker Compose](docs\docker-comp.png)
+![Docker Compose](docs/docker-comp.png)
 
 ---
 
@@ -61,7 +61,7 @@ docker compose up -d
 
 Buka **http://localhost:8069** lalu *login* dengan kredensial default `admin` / `admin`.
 
-![Docker Compose](docs\login-odoo.png)
+![Docker Compose](docs/login-odoo.png)
 
 ---
 
@@ -69,7 +69,7 @@ Buka **http://localhost:8069** lalu *login* dengan kredensial default `admin` / 
 
 **Settings → Developer Tools → Activate the developer mode** (atau tambahkan `?debug=1` ke URL).
 
-![Developer Mode](docs\dev_mode.png)
+![Developer Mode](docs/dev_mode.png)
 
 ---
 
@@ -82,9 +82,9 @@ Buka **http://localhost:8069** lalu *login* dengan kredensial default `admin` / 
 
 > *Expected result:* modul `simple_erp` berstatus *Installed*, menu baru **Business ERP** muncul di *navbar*.
 
-![Simple Erp](docs\simple-erp.png)
+![Simple Erp](docs/simple-erp.png)
 
-![erp menu](docs\erp-menu.png)
+![erp menu](docs/erp-menu.png)
 
 ---
 
@@ -187,5 +187,5 @@ Beberapa arah pengembangan ke depan yang direkomendasikan:
 
 - **Modul Loyalty** sistem *point reward* dan *tiered membership* terintegrasi dengan POS untuk meningkatkan retensi pelanggan.
 - **Mobile Companion App** aplikasi mobile khusus untuk *attendance* dan *quick stock check* bagi barista/kitchen.
-- **Integrasi Payment Gateway** — koneksi langsung ke QRIS / e-wallet untuk *reconciliation* otomatis.
+- **Integrasi Payment Gateway** koneksi langsung ke QRIS / e-wallet untuk *reconciliation* otomatis.
 
