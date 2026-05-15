@@ -32,7 +32,7 @@
 
 Kopi Eyang sebelumnya menjalankan operasionalnya secara manual: pencatatan penjualan dilakukan di POS, stok bahan baku hanya berdasarkan visual, dan rekap keuangan disusun ulang melalui spreadsheet terpisah. Pendekatan ini menimbulkan banyak titik *friction*: data tidak konsisten, kontrol stok lambat sehingga sering terjadi *stock-out*, dan analisis keuangan baru bisa dilakukan setelah seluruh berkas direkonsiliasi manual. **Kopi Eyang Integrated ERP** hadir sebagai transisi dari sistem manual tersebut menuju ekosistem digital terpadu di atas **Odoo 17**, yang menyatukan inventaris, transaksi penjualan, manajemen vendor, kehadiran karyawan, dan pelaporan keuangan dalam satu platform yang konsisten dan dapat diaudit.
 
-Fitur utama sistem ini mencakup **Custom Dashboard berbasis OWL (Odoo Web Library)** yang menampilkan KPI eksekutif (pendapatan, pengeluaran, *net profit*, *stock movement*) dengan filter granularitas *daily/weekly/monthly/yearly* untuk tiap grafik; **RBAC 5-Tier** yang membagi hak akses ke dalam peran **Admin, Founder, Kasir, Barista, dan Kitchen** sehingga setiap karyawan hanya melihat data yang relevan dengan tanggung jawabnya; **manajemen stok bahan baku (*raw material*)** dengan *low-stock alert* otomatis, riwayat perubahan stok yang wajib disertai catatan (audit-trail), dan integrasi langsung dengan modul *Invoice Upload* untuk pencatatan pembelian dari vendor; serta **integrasi data POS** melalui *Sales CSV Reader* yang secara otomatis memotong stok produk jadi setiap kali transaksi penjualan masuk. Seluruh data ini saling terhubung — penjualan memengaruhi stok produk, pembelian memengaruhi stok bahan baku dan pengeluaran, dan semuanya teragregasi *real-time* ke dashboard eksekutif.
+Fitur utama sistem ini mencakup **Custom Dashboard berbasis OWL (Odoo Web Library)** yang menampilkan KPI eksekutif (pendapatan, pengeluaran, *net profit*, *stock movement*) dengan filter granularitas *daily/weekly/monthly/yearly* untuk tiap grafik; **RBAC 5-Tier** yang membagi hak akses ke dalam peran **Admin, Founder, Kasir, Barista, dan Kitchen** sehingga setiap karyawan hanya melihat data yang relevan dengan tanggung jawabnya; **manajemen stok bahan baku (*raw material*)** dengan *low-stock alert* otomatis, riwayat perubahan stok yang wajib disertai catatan (audit-trail), dan integrasi langsung dengan modul *Invoice Upload* untuk pencatatan pembelian dari vendor; serta **integrasi data POS** melalui *Sales CSV Reader* yang secara otomatis memotong stok produk jadi setiap kali transaksi penjualan masuk. Seluruh data ini saling terhubung penjualan memengaruhi stok produk, pembelian memengaruhi stok bahan baku dan pengeluaran, dan semuanya teragregasi *real-time* ke dashboard eksekutif.
 
 ---
 
@@ -40,8 +40,8 @@ Fitur utama sistem ini mencakup **Custom Dashboard berbasis OWL (Odoo Web Librar
 
 ### Prasyarat
 
-- **Docker Desktop** — [Download](https://www.docker.com/products/docker-desktop/)
-- **Python 3.11** (opsional, untuk linting / IDE tooling)
+- **Docker Desktop**
+- **Python 3.11** (opsional)
 
 ### Langkah-langkah
 
@@ -53,7 +53,7 @@ docker compose up -d
 
 > *Expected result:* container `odoo` dan `db` berjalan, log menunjukkan Odoo siap menerima koneksi di port `8069`.
 
-📷 **Screenshot:** _Tempelkan screenshot terminal hasil `docker compose up -d` di sini._
+![Docker Compose](docs\docker-comp.png)
 
 ---
 
@@ -61,7 +61,7 @@ docker compose up -d
 
 Buka **http://localhost:8069** lalu *login* dengan kredensial default `admin` / `admin`.
 
-📷 **Screenshot:** _Tempelkan screenshot halaman login Odoo di sini._
+![Docker Compose](docs\login-odoo.png)
 
 ---
 
@@ -69,7 +69,7 @@ Buka **http://localhost:8069** lalu *login* dengan kredensial default `admin` / 
 
 **Settings → Developer Tools → Activate the developer mode** (atau tambahkan `?debug=1` ke URL).
 
-📷 **Screenshot:** _Tempelkan screenshot menu Settings dengan Developer Mode aktif di sini._
+![Developer Mode](docs\dev_mode.png)
 
 ---
 
@@ -82,9 +82,9 @@ Buka **http://localhost:8069** lalu *login* dengan kredensial default `admin` / 
 
 > *Expected result:* modul `simple_erp` berstatus *Installed*, menu baru **Business ERP** muncul di *navbar*.
 
-📷 **Screenshot:** _Tempelkan screenshot Apps list dengan `simple_erp` ter-install di sini._
+![Simple Erp](docs\simple-erp.png)
 
-📷 **Screenshot:** _Tempelkan screenshot menu Business ERP yang sudah muncul di sini._
+![erp menu](docs\erp-menu.png)
 
 ---
 
@@ -99,8 +99,6 @@ Untuk memulai dengan data demo yang sudah dipersiapkan tim:
 # macOS / Linux
 ./scripts/import_db.sh
 ```
-
-📷 **Screenshot:** _Tempelkan screenshot dashboard setelah import database di sini._
 
 ---
 
@@ -187,9 +185,7 @@ Untuk backup penuh termasuk *filestore* dan konfigurasi, gunakan `export_db_full
 
 Beberapa arah pengembangan ke depan yang direkomendasikan:
 
-- **Integrasi IoT** — sensor *weight scale* untuk monitoring stok bahan baku secara otomatis dan *smart fridge* untuk *cold-chain temperature logging*.
-- **Modul Loyalty** — sistem *point reward* dan *tiered membership* terintegrasi dengan POS untuk meningkatkan retensi pelanggan.
-- **Mobile Companion App** — aplikasi mobile khusus untuk *attendance* dan *quick stock check* bagi barista/kitchen.
-- **Demand Forecasting** — modul prediktif berbasis *machine learning* untuk merekomendasikan jumlah pembelian bahan baku berdasarkan tren historis dan musiman.
+- **Modul Loyalty** sistem *point reward* dan *tiered membership* terintegrasi dengan POS untuk meningkatkan retensi pelanggan.
+- **Mobile Companion App** aplikasi mobile khusus untuk *attendance* dan *quick stock check* bagi barista/kitchen.
 - **Integrasi Payment Gateway** — koneksi langsung ke QRIS / e-wallet untuk *reconciliation* otomatis.
 
